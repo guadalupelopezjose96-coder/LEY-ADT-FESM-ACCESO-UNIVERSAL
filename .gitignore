@@ -1,0 +1,37 @@
+# Bloqueo de secretos para evitar rechazo de GitHub
+*.env
+*.key
+id_ed25519*
+triaconta_key*
+secrets/
+config_privada.json
+
+# --- FILTRO DE PUREZA ADT AL 100% ---
+# Bloqueo de cachés de ejecución
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Bloqueo de archivos temporales de editores (Nano, Vim, etc.)
+*.swp
+*.swo
+*~
+.*.save
+
+# Bloqueo de logs y basura del SO
+*.log
+.DS_Store
+Thumbs.db
+# --- PROTECCIÓN CRIPTOGRÁFICA Y BINARIA AL 100% ---
+# Bloqueo absoluto de llaves privadas y públicas
+*.key
+*.pub
+*.pem
+
+# Bloqueo de artefactos de compilación (Rust/C++)
+target/
+tax_engine_1979
+
+# Bloqueo de corpus masivos de texto
+*.txt
+
