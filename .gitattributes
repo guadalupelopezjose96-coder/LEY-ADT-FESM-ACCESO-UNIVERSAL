@@ -1,0 +1,12 @@
+# Normalizar saltos de línea automáticamente
+* text=auto
+
+# Ocultar Makefiles y scripts de configuración del conteo de lenguaje en GitHub
+Makefile linguist-vendored
+*.mk linguist-vendored
+CMakeLists.txt linguist-vendored
+configure linguist-vendored
+
+# Excluir documentación y archivos generados de las estadísticas
+docs/* linguist-documentation
+*.md linguist-documentation

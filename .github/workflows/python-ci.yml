@@ -1,0 +1,31 @@
+name: Python CI & Auditoria Legal/Seguridad
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+jobs:
+  lint-and-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar código
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar herramientas de análisis (Ruff y pip-audit)
+        run: |
+          python -m pip install --upgrade pip
+          pip install ruff pip-audit
+
+      - name: Verificar sintaxis y estilo con Ruff
+        run: ruff check . || true
+
+      - name: Auditar seguridad de dependencias
+        run: |
+          if [ -f requirements.txt ]; then pip-audit -r requirements.txt; fi
