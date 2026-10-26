@@ -1,0 +1,31 @@
+name: GCP Zero-Trust OIDC Sync
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  gcp-oidc-verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud via Keyless WIF (OIDC)
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: "projects/521552856699/locations/global/workloadIdentityPools/pool-gh-oidc-11a6/providers/prv-gh-oidc"
+          service_account: "sa-terraform-org-cicd@project-9e8047eb-9ac7-4224-866.iam.gserviceaccount.com"
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Verify Zero-Trust Organization Hierarchy (320717657398)
+        run: |
+          gcloud organizations describe 320717657398
+          gcloud projects list --filter="parent.type=folder AND lifecycleState=ACTIVE"
