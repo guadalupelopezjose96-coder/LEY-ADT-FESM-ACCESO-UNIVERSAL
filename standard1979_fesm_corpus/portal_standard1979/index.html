@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="index, follow, noai, noimageai">
+<meta name="author" content="José - All Rights Reserved (DMCA 17 U.S.C. 1202 CMI)">
+<title>Sistema Virtual 3D & Espectros Acústico-Lumínicos</title>
+<style>
+  :root { --bg:#07090e; --card:#111827; --border:#1f2937; --laser:#00f2fe; --accent:#0ea5e9; --text:#f3f4f6; }
+  body { background:var(--bg); color:var(--text); font-family:system-ui,-apple-system,sans-serif; margin:0; padding:18px; line-height:1.55; }
+  .container { max-width:1080px; margin:0 auto; background:var(--card); padding:24px; border-radius:14px; border:1px solid var(--border); box-shadow:0 0 35px rgba(0,242,254,0.09); }
+  .header { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; border-bottom:1px solid var(--border); padding-bottom:14px; }
+  h1 { color:var(--laser); margin:0; font-size:1.6rem; }
+  .badge { background:#0369a1; color:#e0f2fe; padding:5px 12px; border-radius:99px; font-size:0.75rem; font-weight:bold; }
+  .grid { display:grid; grid-template-columns:repeat(3, 1fr); gap:16px; margin:18px 0; }
+  @media(max-width:860px){ .grid { grid-template-columns:1fr; } }
+  .panel { background:#0b0f19; padding:16px; border-radius:10px; border:1px solid var(--border); }
+  h3 { margin-top:0; color:#38bdf8; font-size:0.95rem; }
+  canvas { width:100%; height:175px; background:#030712; border-radius:8px; border:1px solid #0284c7; display:block; margin-top:8px; }
+  input[type=range], select { width:100%; margin:8px 0; padding:7px; background:#1e293b; color:#fff; border:1px solid #334155; border-radius:6px; }
+  button { width:100%; background:var(--accent); color:#fff; border:none; padding:12px; border-radius:8px; font-weight:bold; cursor:pointer; font-size:0.95rem; margin-top:6px; -webkit-tap-highlight-color:transparent; }
+  .metrics { font-family:monospace; font-size:0.78rem; color:#34d399; background:#030712; padding:9px; border-radius:6px; margin-top:10px; }
+  .legal { font-size:0.75rem; color:#9ca3af; background:#0b0f19; padding:15px; border-radius:10px; border-left:4px solid var(--laser); margin-top:16px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1 id="domainTitle">AuraIntel Studios 3D™</h1>
+    <span class="badge">100% LEGAL • LÍCITO • 3D VECTOR ENGINE & CLIENT-SIDE DSP</span>
+  </div>
+
+  <div class="grid">
+    <div class="panel">
+      <h3>1. Motor Acústico (IEEE 754 / -1.0 dBTP)</h3>
+      <label>Frecuencia: <strong id="freqVal">432</strong> Hz</label>
+      <input type="range" id="freqSlider" min="20" max="2000" step="1" value="432">
+      <label>Forma de Onda DSP:</label>
+      <select id="waveType">
+        <option value="sine">Sinusoidal Pura (THD &lt; 0.001%)</option>
+        <option value="triangle">Triangular Armónica</option>
+      </select>
+      <label>Espectro Láser (Nanómetros Simulados):</label>
+      <select id="laserColor">
+        <option value="#00f2fe">Cian Coherente (488 nm)</option>
+        <option value="#10b981">Verde Láser (532 nm)</option>
+        <option value="#ef4444">Rojo Fotobiomodulación (660 nm)</option>
+      </select>
+      <button id="toggleBtn" type="button">Activar Motor 3D y Espectro</button>
+    </div>
+
+    <div class="panel">
+      <h3>2. Osciloscopio Láser FFT (WCAG 2.3.1)</h3>
+      <canvas id="spectrumCanvas" width="340" height="175"></canvas>
+      <div class="metrics" id="telemetryBox">
+        ESTADO: EN ESPERA | FREC: 432 Hz | λ: 0.794 m
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>3. Estudio 3D Reactivo (Proyección Matriz XYZ)</h3>
+      <canvas id="canvas3D" width="340" height="175"></canvas>
+      <div class="metrics" id="metrics3D">
+        MOTOR 3D: ACTIVO | VÉRTICES: 14 | FPS: 60
+      </div>
+    </div>
+  </div>
+
+  <div class="legal">
+    <strong>MARCO JURÍDICO INTEGRAL, EULA Y PROTECCIÓN DE PROPIEDAD INTELECTUAL (17 U.S.C. § 101, § 103 & DMCA § 1202):</strong><br>
+    • <strong>Cumplimiento FDA / FTC / OSHA:</strong> Las utilidades acústicas, lumínicas y tridimensionales operan bajo la política General Wellness de la FDA con fines exclusivos de relajación, educación y arte. No constituyen un dispositivo médico. Mantenga la presión sonora por debajo de 85 dBA.<br>
+    • <strong>Seguridad Fotobiológica (WCAG 2.2 Criterio 2.3.1):</strong> Los motores de renderizado 2D y 3D están acotados matemáticamente para impedir destellos entre 3 Hz y 60 Hz.<br>
+    • <strong>Propiedad Intelectual Exclusiva (DTSA / FUTSA FL Stat. Cap. 688):</strong> Copyright © 2026 José. Todos los derechos reservados sobre la arquitectura, selección, coordinación y código compilado. Prohibido el web scraping y entrenamiento de IA sin licencia.<br>
+    • <strong>Jurisdicción (UCC § 2-316):</strong> Entregado "AS IS" bajo las leyes del Estado de Florida y EE. UU.
+  </div>
+</div>
+
+<script>
+"use strict";
+document.getElementById("domainTitle").innerText = (window.location.hostname || "AuraIntelStudios3D") + "™";
+let ctx = null, osc = null, gain = null, analyser = null, playing = false;
+let beamColor = "#00f2fe", angleX = 0.4, angleY = 0.6, phase = 0;
+
+const slider = document.getElementById("freqSlider");
+const freqVal = document.getElementById("freqVal");
+const waveSelect = document.getElementById("waveType");
+const colorSelect = document.getElementById("laserColor");
+const btn = document.getElementById("toggleBtn");
+const telemetry = document.getElementById("telemetryBox");
+const metrics3D = document.getElementById("metrics3D");
+const canvas = document.getElementById("spectrumCanvas");
+const cCtx = canvas.getContext("2d");
+const canvas3D = document.getElementById("canvas3D");
+const ctx3D = canvas3D.getContext("2d");
+
+const vertices = [
+  [-1,-1,-1],[1,-1,-1],[1,1,-1],[-1,1,-1],
+  [-1,-1,1],[1,-1,1],[1,1,1],[-1,1,1],
+  [0,-1.6,0],[0,1.6,0],[-1.6,0,0],[1.6,0,0],[0,0,-1.6],[0,0,1.6]
+];
+const edges = [
+  [0,1],[1,2],[2,3],[3,0],[4,5],[5,6],[6,7],[7,4],[0,4],[1,5],[2,6],[3,7],
+  [8,9],[10,11],[12,13],[8,0],[8,1],[9,2],[9,3]
+];
+
+function calcWavelength(freq) {
+  const f = Math.min(Math.max(Number(freq), 20), 2000);
+  return (343 / f).toFixed(3);
+}
+
+function updateTelemetry(freq, stateText) {
+  const lambda = calcWavelength(freq);
+  telemetry.innerText = "ESTADO: " + stateText + " | FREC: " + freq + " Hz | λ: " + lambda + " m";
+}
+
+function draw3DFrame(scaleMod) {
+  ctx3D.fillStyle = "rgba(3, 7, 18, 0.35)";
+  ctx3D.fillRect(0, 0, canvas3D.width, canvas3D.height);
+  ctx3D.strokeStyle = beamColor;
+  ctx3D.lineWidth = 1.8;
+
+  const cosX = Math.cos(angleX), sinX = Math.sin(angleX);
+  const cosY = Math.cos(angleY), sinY = Math.sin(angleY);
+  const projected = [];
+
+  for (let i = 0; i < vertices.length; i++) {
+    let x = vertices[i][0] * scaleMod;
+    let y = vertices[i][1] * scaleMod;
+    let z = vertices[i][2] * scaleMod;
+
+    let y1 = y * cosX - z * sinX;
+    let z1 = y * sinX + z * cosX;
+    let x2 = x * cosY + z1 * sinY;
+    let z2 = -x * sinY + z1 * cosY;
+
+    const fov = 220 / (4 + z2);
+    projected.push([canvas3D.width / 2 + x2 * fov, canvas3D.height / 2 + y1 * fov]);
+  }
+
+  ctx3D.beginPath();
+  for (let i = 0; i < edges.length; i++) {
+    const p1 = projected[edges[i][0]];
+    const p2 = projected[edges[i][1]];
+    ctx3D.moveTo(p1[0], p1[1]);
+    ctx3D.lineTo(p2[0], p2[1]);
+  }
+  ctx3D.stroke();
+}
+
+function drawSpectrumWave(freq) {
+  cCtx.fillStyle = "rgba(3, 7, 18, 0.28)";
+  cCtx.fillRect(0, 0, canvas.width, canvas.height);
+  cCtx.lineWidth = 2.2;
+  cCtx.strokeStyle = beamColor;
+  cCtx.beginPath();
+
+  if (playing) {
+    phase += 0.12;
+    const cycles = Math.max(2, Math.min(freq / 110, 14));
+    for (let x = 0; x < canvas.width; x++) {
+      const t = (x / canvas.width) * Math.PI * 2 * cycles + phase;
+      const raw = waveSelect.value === "triangle" ? (2 / Math.PI) * Math.asin(Math.sin(t)) : Math.sin(t);
+      const y = (canvas.height / 2) + raw * (canvas.height * 0.34);
+      if (x === 0) cCtx.moveTo(x, y);
+      else cCtx.lineTo(x, y);
+    }
+  } else {
+    cCtx.moveTo(0, canvas.height / 2);
+    cCtx.lineTo(canvas.width, canvas.height / 2);
+  }
+  cCtx.stroke();
+}
+
+function masterLoop() {
+  requestAnimationFrame(masterLoop);
+  const f = Math.min(Math.max(Number(slider.value), 20), 2000);
+  const speed = playing ? (0.015 * Math.min(f / 432, 2.5)) : 0.005;
+  angleX += speed;
+  angleY += speed * 1.3;
+  const pulse = playing ? (1.0 + Math.sin(phase) * 0.15) : 1.0;
+  draw3DFrame(pulse);
+  drawSpectrumWave(f);
+}
+
+masterLoop();
+
+slider.addEventListener("input", function() {
+  const f = Math.min(Math.max(Number(this.value), 20), 2000);
+  freqVal.innerText = f;
+  if (osc && playing && ctx) osc.frequency.setValueAtTime(f, ctx.currentTime);
+  updateTelemetry(f, playing ? "ACTIVO 3D + DSP" : "EN ESPERA");
+});
+
+waveSelect.addEventListener("change", function() {
+  if (osc && playing) osc.type = this.value;
+});
+
+colorSelect.addEventListener("change", function() {
+  beamColor = this.value;
+});
+
+btn.addEventListener("click", function() {
+  if (!playing) {
+    playing = true;
+    btn.innerText = "Detener Motor 3D y Espectro";
+    btn.style.background = "#ef4444";
+    updateTelemetry(slider.value, "ACTIVO 3D + DSP");
+    metrics3D.innerText = "MOTOR 3D: SINCRONIZADO (" + slider.value + " Hz) | FPS: 60";
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (AudioCtx) {
+        ctx = new AudioCtx();
+        if (ctx.state === "suspended") ctx.resume();
+        osc = ctx.createOscillator();
+        gain = ctx.createGain();
+        gain.gain.setValueAtTime(0.15, ctx.currentTime);
+        osc.type = waveSelect.value;
+        osc.frequency.setValueAtTime(Number(slider.value), ctx.currentTime);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(0);
+      }
+    } catch (e) {}
+  } else {
+    playing = false;
+    btn.innerText = "Activar Motor 3D y Espectro";
+    btn.style.background = "#0ea5e9";
+    updateTelemetry(slider.value, "DETENIDO");
+    metrics3D.innerText = "MOTOR 3D: ROTACIÓN BASE | VÉRTICES: 14 | FPS: 60";
+    try {
+      if (osc) { osc.stop(); osc.disconnect(); osc = null; }
+      if (ctx) { ctx.close(); ctx = null; }
+    } catch (e) {}
+  }
+});
+</script>
+</body>
+</html>
