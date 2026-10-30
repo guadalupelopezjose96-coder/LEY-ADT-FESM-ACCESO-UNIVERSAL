@@ -1,0 +1,22 @@
+[package]
+name = "auraintel_vpp_grid_core"
+version = "2026.1.0"
+edition = "2021"
+authors = ["José Emanuel Guadalupe López <admin@auraintelcore.com>"]
+description = "Total Grid Energetics, Grid-Forming VPP Orchestrator, Synchrophasor Protection & IRC Chapter 56 (AAUFSA) Statutory Ledger Engine"
+license = "LicenseRef-Proprietary-GuadalupeLopezJose96-Org"
+publish = false
+
+[dependencies]
+serde = { version = "1.0.210", default-features = false, features = ["derive", "alloc"] }
+serde_json = { version = "1.0.128", default-features = false, features = ["alloc"] }
+sha2 = { version = "0.10.8", default-features = false }
+uuid = { version = "1.10.0", default-features = false, features = ["v4", "serde"] }
+
+[profile.release]
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+panic = "abort"
+strip = "symbols"
+overflow-checks = true
