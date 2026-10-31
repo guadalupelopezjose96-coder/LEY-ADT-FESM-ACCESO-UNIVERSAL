@@ -65,3 +65,7 @@ path = "src/bin/proelite_master_orchestrator.rs"
 [[bin]]
 name = "gemini-cognitive-prod"
 path = "src/bin/gemini_cognitive_prod.rs"
+
+[[bin]]
+name = "middleware-compliance-prod"
+path = "src/bin/middleware_compliance_prod.rs"
