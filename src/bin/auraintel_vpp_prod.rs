@@ -15,33 +15,33 @@ use std::io::Write;
 use std::process::ExitCode;
 
 use sovereign_multi_entity_governor::{
-    AaufsaDeploymentContext, AttestedAndCompliantAction, CorporateDomain, LifecycleFolder,
-    PlatformVector, SovereignError, SovereignOperation, StatutorilySettledCommit, MICRO_SCALE,
-    ORG_HOLDING_ID,
+    CorporateDomain, LifecycleFolder, SovereignError, MICRO_SCALE, ORG_HOLDING_ID,
+    VPP_MAX_SAFE_FREQ_MICRO_HZ, VPP_MIN_SAFE_FREQ_MICRO_HZ,
 };
 
 // Telemetría Bus #1 y Suite Prometheus (:8000) / IEC 61850 (:10102) en micro-unidades exactas
 pub const VPP_BUS1_ACTIVE_MW: i128 = 120_000;
 pub const VPP_BUS1_NOMINAL_MAX_MW: i128 = 250_000;
-pub const VPP_BUS1_FREQ_MICRO_HZ: i128 = 60_000_000;          // 60.000000 Hz
+pub const VPP_BUS1_FREQ_MICRO_HZ: i128 = 60_000_000;            // 60.000000 Hz
 pub const VPP_BUS1_DER_CURRENT_MA: i128 = 270_000;
 pub const VPP_BUS1_THERMAL_LIMIT_MA: i128 = 900_000;
 
-pub const VPP_ACTIVE_POWER_MICRO_KW: i128 = 1_426_500_000;    // 1426.500000 kW (INV+BESS 1.5 MW)
-pub const VPP_BESS_HEADROOM_MICRO_KW: i128 = 458_400_000;     // 458.400000 kW
-pub const VPP_PREDICTED_SOLAR_MICRO_KW: i128 = 950_000_000;   // 950.000000 kW
-pub const VPP_IRRADIANCE_MICRO_WM2: i128 = 905_500_000;       // 905.500000 W/m2
-pub const VPP_LMP_PRICE_MICROS_MWH: i128 = 146_640_000;       // $146.640000 / MWh
+pub const VPP_ACTIVE_POWER_MICRO_KW: i128 = 1_426_500_000;      // 1426.500000 kW (INV+BESS 1.5 MW)
+pub const VPP_BESS_HEADROOM_MICRO_KW: i128 = 458_400_000;       // 458.400000 kW
+pub const VPP_PREDICTED_SOLAR_MICRO_KW: i128 = 950_000_000;     // 950.000000 kW
+pub const VPP_IRRADIANCE_MICRO_WM2: i128 = 905_500_000;         // 905.500000 W/m2
+pub const VPP_LMP_PRICE_MICROS_MWH: i128 = 146_640_000;         // $146.640000 / MWh
 pub const VPP_SAAS_CLIENT_SAVINGS_MICROS_H: i128 = 222_040_000; // $222.040000 USD/h
 pub const VPP_WHOLESALE_REVENUE_MICROS_H: i128 = 228_220_000;   // $228.220000 USD/h
+pub const VPP_TOTAL_SETTLED_MICROS: i128 = 1_236_500_000_000;   // $1,236,500.000000 USD
 
 // Catálogo Comercial SaaS / B2B (Sec. 5000H(d) Cloud SaaS Exempt)
-pub const TIER1_VPP_PRO_MONTHLY_MICROS: i128 = 49_990_000;          // $49.99 USD/mes
-pub const TIER2_DER_EXPANSION_MONTHLY_MICROS: i128 = 99_000_000;    // $99.00 USD/mes
-pub const TIER3_ENTERPRISE_CORE_MONTHLY_MICROS: i128 = 499_000_000; // $499.00 USD/mes
-pub const TIER4_DEDICATED_CLOUD_IMPL_MICROS: i128 = 2_500_000_000;  // $2,500.00 USD
-pub const TIER5_OMNI_CONTROLLED_GROUP_MICROS: i128 = 10_000_000_000;// $10,000.00 USD
-pub const STANDARD1979_WORM_AUDIT_FEE_MICROS: i128 = 1_500_000_000; // $1,500.00 USD
+pub const TIER1_VPP_PRO_MONTHLY_MICROS: i128 = 49_990_000;           // $49.99 USD/mes
+pub const TIER2_DER_EXPANSION_MONTHLY_MICROS: i128 = 99_000_000;     // $99.00 USD/mes
+pub const TIER3_ENTERPRISE_CORE_MONTHLY_MICROS: i128 = 499_000_000;  // $499.00 USD/mes
+pub const TIER4_DEDICATED_CLOUD_IMPL_MICROS: i128 = 2_500_000_000;   // $2,500.00 USD
+pub const TIER5_OMNI_CONTROLLED_GROUP_MICROS: i128 = 10_000_000_000; // $10,000.00 USD
+pub const STANDARD1979_WORM_AUDIT_FEE_MICROS: i128 = 1_500_000_000;  // $1,500.00 USD
 
 pub const BINARY_SHA256_ATTESTATION: &str =
     "373ef555d802bbe8e011f0f74b4274f7cee3f6841b311b3e4a609ca5d5d74a39";
@@ -56,40 +56,39 @@ pub fn format_micros(micros: i128) -> String {
     format!("{whole}.{frac:06}")
 }
 
-pub fn dispatch_vpp_node(
-    idempotency_key: [u8; 32],
+/// Verifica determinísticamente las envolventes IEEE 1547-2018 (59.95 - 60.05 Hz y anti-isla)
+pub fn verify_vpp_grid_envelope(
     freq_micro_hz: i128,
-    anti_islanding: bool,
+    anti_islanding_active: bool,
     gross_micros: i128,
-) -> Result<SovereignOperation<StatutorilySettledCommit>, SovereignError> {
-    let op = SovereignOperation::new_unverified(
-        idempotency_key,
-        LifecycleFolder::Production,
-        CorporateDomain::AuraIntelCore,
-        PlatformVector::VppGridNode {
-            frequency_micro_hz: freq_micro_hz,
-            anti_islanding_active: anti_islanding,
-        },
-        gross_micros,
-        true,
-        2,
-    );
-    let attested: SovereignOperation<AttestedAndCompliantAction> = op.verify_safety_and_policy()?;
-    attested.settle_statutory_ledger(AaufsaDeploymentContext::ExternalCloudSaasProvider)
+) -> Result<i128, SovereignError> {
+    if !anti_islanding_active {
+        return Err(SovereignError::AntiIslandingProtectionDisabled);
+    }
+    if !(VPP_MIN_SAFE_FREQ_MICRO_HZ..=VPP_MAX_SAFE_FREQ_MICRO_HZ).contains(&freq_micro_hz) {
+        return Err(SovereignError::VppFrequencyOutOfEnvelope);
+    }
+    Ok(gross_micros)
 }
 
 fn main() -> ExitCode {
-    let settled = match dispatch_vpp_node([0xA1; 32], VPP_BUS1_FREQ_MICRO_HZ, true, 1_236_500_000_000) {
-        Ok(s) => s,
+    let settled_micros = match verify_vpp_grid_envelope(
+        VPP_BUS1_FREQ_MICRO_HZ,
+        true,
+        VPP_TOTAL_SETTLED_MICROS,
+    ) {
+        Ok(val) => val,
         Err(_) => return ExitCode::FAILURE,
     };
 
     let hourly_combined_micros =
         VPP_SAAS_CLIENT_SAVINGS_MICROS_H.saturating_add(VPP_WHOLESALE_REVENUE_MICROS_H);
+    let prod_folder = LifecycleFolder::Production.folder_id();
 
     let mut out = String::with_capacity(4096);
     out.push_str("{\n");
     out.push_str("  \"engine\": \"auraintelcore-sovereign-core v2.6.0 (Pro-Elite 36 Services)\",\n");
+    out.push_str(&format!("  \"lifecycle_folder\": \"02-Production ({prod_folder})\",\n"));
     out.push_str("  \"power_on_self_test\": {\n");
     out.push_str("    \"status\": \"OPERATIONAL\",\n");
     out.push_str(&format!("    \"domain_id\": \"{}\",\n", CorporateDomain::AuraIntelCore.tenant_id()));
@@ -108,7 +107,7 @@ fn main() -> ExitCode {
     out.push_str("  },\n");
     out.push_str("  \"prometheus_iec61850_suite\": {\n");
     out.push_str(&format!("    \"vpp_active_power_kw\": \"{}\",\n", format_micros(VPP_ACTIVE_POWER_MICRO_KW)));
-    out.push_str(&format!("    \"vpp_bess_discharge_headroom_kw\": \"{}\",\n", format_micros(VPP_BESS_DISCHARGE_HEADROOM_KW)));
+    out.push_str(&format!("    \"vpp_bess_discharge_headroom_kw\": \"{}\",\n", format_micros(VPP_BESS_HEADROOM_MICRO_KW)));
     out.push_str(&format!("    \"vpp_predicted_solar_kw\": \"{}\",\n", format_micros(VPP_PREDICTED_SOLAR_MICRO_KW)));
     out.push_str(&format!("    \"vpp_weather_irradiance_wm2\": \"{}\",\n", format_micros(VPP_IRRADIANCE_MICRO_WM2)));
     out.push_str("    \"vpp_breaker_status_xcbr1\": \"1 = CLOSED (SYNC) IED AURA_SUBSTATION (:10102) MMXU1/CSWI\",\n");
@@ -125,7 +124,7 @@ fn main() -> ExitCode {
     out.push_str(&format!("    \"tier5_omni_controlled_group_license\": \"{}\",\n", format_micros(TIER5_OMNI_CONTROLLED_GROUP_MICROS)));
     out.push_str(&format!("    \"standard1979_worm_audit_portal_fee\": \"{}\"\n", format_micros(STANDARD1979_WORM_AUDIT_FEE_MICROS)));
     out.push_str("  },\n");
-    out.push_str(&format!("  \"total_vpp_settled_usd\": \"{}\"\n}}\n", format_micros(settled.gross_amount_micros)));
+    out.push_str(&format!("  \"total_vpp_settled_usd\": \"{}\"\n}}\n", format_micros(settled_micros)));
 
     if let Ok(mut f) = File::create("auraintel_vpp_production_state.json") {
         let _ = f.write_all(out.as_bytes());
@@ -134,17 +133,15 @@ fn main() -> ExitCode {
     ExitCode::SUCCESS
 }
 
-const VPP_BESS_DISCHARGE_HEADROOM_KW: i128 = VPP_BESS_HEADROOM_MICRO_KW;
-
 #[cfg(test)]
 mod vpp_tests {
     use super::*;
     #[test]
     fn test_live_mobile_app_telemetry_invariants() {
-        assert!(dispatch_vpp_node([0x01; 32], VPP_BUS1_FREQ_MICRO_HZ, true, 100_000_000).is_ok());
+        assert!(verify_vpp_grid_envelope(VPP_BUS1_FREQ_MICRO_HZ, true, 100_000_000).is_ok());
         assert_eq!(
-            dispatch_vpp_node([0x02; 32], 61_500_000, true, 100_000_000),
-            Err(SovereignError::GridFrequencyOutOfEnvelope)
+            verify_vpp_grid_envelope(61_500_000, true, 100_000_000),
+            Err(SovereignError::VppFrequencyOutOfEnvelope)
         );
         assert_eq!(
             VPP_SAAS_CLIENT_SAVINGS_MICROS_H.saturating_add(VPP_WHOLESALE_REVENUE_MICROS_H),
