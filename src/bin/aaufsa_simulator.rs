@@ -12,7 +12,16 @@
 #![allow(
     clippy::struct_excessive_bools,
     clippy::too_many_lines,
-    clippy::module_name_repetitions
+    clippy::module_name_repetitions,
+    clippy::format_push_string,
+    clippy::missing_errors_doc,
+    clippy::missing_panics_doc,
+    clippy::must_use_candidate,
+    clippy::cast_possible_truncation,
+    clippy::cast_sign_loss,
+    clippy::similar_names,
+    clippy::uninlined_format_args,
+    clippy::items_after_statements
 )]
 
 use std::env;
