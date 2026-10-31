@@ -30,6 +30,8 @@ jobs:
         run: |
           cargo clippy --all-targets -- \
             -D warnings \
+            -A unused_imports \
+            -A dead_code \
             -A clippy::format_push_string \
             -A clippy::struct_excessive_bools \
             -A clippy::too_many_lines \

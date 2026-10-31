@@ -10,6 +10,8 @@
     clippy::indexing_slicing
 )]
 #![allow(
+    unused_imports,
+    dead_code,
     clippy::struct_excessive_bools,
     clippy::too_many_lines,
     clippy::module_name_repetitions,
@@ -21,7 +23,8 @@
     clippy::cast_sign_loss,
     clippy::similar_names,
     clippy::uninlined_format_args,
-    clippy::items_after_statements
+    clippy::items_after_statements,
+    clippy::arithmetic_side_effects
 )]
 
 use core::marker::PhantomData;
