@@ -50,8 +50,8 @@ struct SonicChannelStream {
 pub fn format_signed_micros(micros: i128) -> String {
     let is_neg = micros < 0;
     let abs_val = micros.unsigned_abs();
-    let whole = abs_val / (MICRO_SCALE as u128);
-    let frac = abs_val % (MICRO_SCALE as u128);
+    let whole = abs_val / 1_000_000_u128;
+    let frac = abs_val % 1_000_000_u128;
     if is_neg {
         format!("-{whole}.{frac:06}")
     } else {

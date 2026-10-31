@@ -58,8 +58,8 @@ pub struct SpatialDigitalTwinScene {
 #[must_use]
 pub fn format_micros(micros: i128) -> String {
     let abs_val = micros.unsigned_abs();
-    let whole = abs_val / (MICRO_SCALE as u128);
-    let frac = abs_val % (MICRO_SCALE as u128);
+    let whole = abs_val / 1_000_000_u128;
+    let frac = abs_val % 1_000_000_u128;
     format!("{whole}.{frac:06}")
 }
 
@@ -152,7 +152,7 @@ fn main() -> ExitCode {
         ));
         out.push_str(&format!(
             "      \"frame_time_ms\": \"{}\",\n",
-            format_micros(sc.frame_time_micro_ms * 1_000)
+            format_micros(sc.frame_time_micro_ms.saturating_mul(1_000))
         ));
         match verify_spatial_scene(sc) {
             Ok(val) => {
