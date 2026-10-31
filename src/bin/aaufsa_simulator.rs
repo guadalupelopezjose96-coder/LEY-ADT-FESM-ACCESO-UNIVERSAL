@@ -1,5 +1,4 @@
 #![forbid(unsafe_code)]
-#![allow(clippy::struct_excessive_bools, clippy::too_many_lines)]
 #![deny(
     clippy::all,
     clippy::pedantic,
@@ -9,6 +8,11 @@
     clippy::float_arithmetic,
     clippy::arithmetic_side_effects,
     clippy::indexing_slicing
+)]
+#![allow(
+    clippy::struct_excessive_bools,
+    clippy::too_many_lines,
+    clippy::module_name_repetitions
 )]
 
 use std::env;

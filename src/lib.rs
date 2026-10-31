@@ -1,5 +1,4 @@
 #![forbid(unsafe_code)]
-#![allow(clippy::struct_excessive_bools, clippy::too_many_lines)]
 #![deny(
     clippy::all,
     clippy::pedantic,
@@ -9,6 +8,11 @@
     clippy::float_arithmetic,
     clippy::arithmetic_side_effects,
     clippy::indexing_slicing
+)]
+#![allow(
+    clippy::struct_excessive_bools,
+    clippy::too_many_lines,
+    clippy::module_name_repetitions
 )]
 
 use core::marker::PhantomData;
@@ -134,6 +138,7 @@ pub enum AaufsaDeploymentContext {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[allow(clippy::struct_excessive_bools)]
 pub struct AaufsaTaxDetermination {
     pub cloud_saas_exempt: bool,
     pub small_business_exempt: bool,
