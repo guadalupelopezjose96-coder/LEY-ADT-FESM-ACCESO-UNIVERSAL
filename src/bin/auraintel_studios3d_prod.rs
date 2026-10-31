@@ -12,15 +12,11 @@ use std::fs::File;
 use std::io::Write;
 use std::process::ExitCode;
 
-use sovereign_multi_entity_governor::{
-    CorporateDomain, LifecycleFolder, MICRO_SCALE, ORG_HOLDING_ID,
-};
+use sovereign_multi_entity_governor::{CorporateDomain, LifecycleFolder, ORG_HOLDING_ID};
 
-// Constantes deterministas de AuraIntelStudios3D.com (Sub-división espacial de 188680247367)
 pub const STUDIOS3D_TARGET_FPS: u32 = 120;
-pub const STUDIOS3D_FRAME_BUDGET_MICRO_MS: i128 = 8_333; // 8.333 ms (120 FPS exactos)
-pub const STUDIOS3D_MAX_VOXEL_BOUNDS_MICROMETERS: i128 = 1_000_000_000; // 1,000.000000 metros
-pub const STUDIOS3D_DIGITAL_TWIN_SETTLED_MICROS: i128 = 480_000_000_000; // $480,000.000000 USD
+pub const STUDIOS3D_FRAME_BUDGET_MICRO_MS: i128 = 8_333;
+pub const STUDIOS3D_MAX_VOXEL_BOUNDS_MICROMETERS: i128 = 1_000_000_000;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Studios3dError {
@@ -47,7 +43,6 @@ pub fn format_micros(micros: i128) -> String {
     format!("{whole}.{frac:06}")
 }
 
-/// Verifica determinísticamente la geometría en punto fijo y presupuesto de cuadro de 120 FPS
 pub fn verify_spatial_scene(scene: &SpatialDigitalTwinScene) -> Result<i128, Studios3dError> {
     if !scene.c2pa_worm_verified {
         return Err(Studios3dError::UntrustedAssetSignature);
@@ -90,7 +85,6 @@ fn build_studios3d_scenes() -> [SpatialDigitalTwinScene; 4] {
             c2pa_worm_verified: true,
             settled_micros: 125_000_000_000,
         },
-        // Escena 4: Prueba Fail-Closed contra activo 3D sin firma C2PA/WORM
         SpatialDigitalTwinScene {
             scene_id: "S3D-TWIN-04-UNVERIFIED-MESH-GUARD",
             linked_vpp_asset: "EXTERNAL-UNTRUSTED-GLTF",
@@ -108,7 +102,7 @@ fn main() -> ExitCode {
     let tenant_id = CorporateDomain::AuraIntelCore.tenant_id();
     let mut total_settled: i128 = 0;
 
-    let mut out = String::with_capacity(4096);
+    let mut out = String::with_capacity(2048);
     out.push_str("{\n");
     out.push_str("  \"domain_fqdn\": \"auraintelstudios3d.com\",\n");
     out.push_str("  \"parent_division\": \"DIV-01-AURAINTELCORE (auraintelcore.com)\",\n");

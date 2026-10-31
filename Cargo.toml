@@ -73,3 +73,7 @@ path = "src/bin/middleware_compliance_prod.rs"
 [[bin]]
 name = "auraintel-studios3d-prod"
 path = "src/bin/auraintel_studios3d_prod.rs"
+
+[[bin]]
+name = "sovereign-introspection-prod"
+path = "src/bin/sovereign_introspection_prod.rs"
