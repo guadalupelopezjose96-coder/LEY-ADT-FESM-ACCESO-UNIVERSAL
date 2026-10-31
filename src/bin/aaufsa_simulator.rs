@@ -1,4 +1,5 @@
 #![forbid(unsafe_code)]
+#![allow(clippy::struct_excessive_bools, clippy::too_many_lines)]
 #![deny(
     clippy::all,
     clippy::pedantic,
