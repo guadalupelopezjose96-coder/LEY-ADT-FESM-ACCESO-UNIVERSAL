@@ -18,15 +18,12 @@ use sovereign_multi_entity_governor::{
     CorporateDomain, LifecycleFolder, MICRO_SCALE, ORG_HOLDING_ID,
 };
 
-pub const PRODUCTION_FOLDER_ID: &str = "978426653396";
 pub const OPTIMAL_SERVICES_COUNT: u32 = 36;
-
-// Constantes exactas del flujo Clawback auditado en Standard1979.com (Domain 282230018778)
-pub const CLAWBACK_BASE_TAX_MICROS: i128 = 18_360_000_000;      // $18,360.00 USD (15.30%)
-pub const CLAWBACK_SURCHARGE_2PCT_MICROS: i128 = 367_200_000;   // $367.20 USD (Recargo Sec. 5000G(c))
-pub const CLAWBACK_TOTAL_MICROS: i128 = 18_727_200_000;         // $18,727.20 USD
-pub const CLAWBACK_OASI_75_MICROS: i128 = 14_045_400_000;       // $14,045.40 USD (1,404,540 centavos)
-pub const CLAWBACK_RESKILLING_25_MICROS: i128 = 4_681_800_000;  // $4,681.80 USD (468,180 centavos)
+pub const CLAWBACK_BASE_TAX_MICROS: i128 = 18_360_000_000;
+pub const CLAWBACK_SURCHARGE_2PCT_MICROS: i128 = 367_200_000;
+pub const CLAWBACK_TOTAL_MICROS: i128 = 18_727_200_000;
+pub const CLAWBACK_OASI_75_MICROS: i128 = 14_045_400_000;
+pub const CLAWBACK_RESKILLING_25_MICROS: i128 = 4_681_800_000;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum MiddlewareGateError {
@@ -131,14 +128,13 @@ fn build_middleware_channels() -> [MiddlewareOidcGateChannel; 7] {
             rls_context_injected: true,
             settled_micros: CLAWBACK_TOTAL_MICROS,
         },
-        // Canal 7: Prueba Fail-Closed contra llave estática JSON prohibida
         MiddlewareOidcGateChannel {
             gate_id: "MW-GATE-07-STATIC-KEY-VIOLATION-TEST",
             workflow_name: "GCP Zero-Trust OIDC Sync",
             domain: CorporateDomain::AuraIntelCore,
             domain_fqdn: "auraintelcore.com",
             keyless_oidc_verified: true,
-            static_key_detected: true, // BLOQUEO FAIL-CLOSED
+            static_key_detected: true,
             rls_context_injected: true,
             settled_micros: 50_000_000_000,
         },
