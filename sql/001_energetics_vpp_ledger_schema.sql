@@ -1,29 +1,33 @@
 -- =============================================================================
--- AURAINTEL VPP & ENERGETICS TRANSACTIVE LEDGER (POSTGRESQL SERIALIZABLE)
+-- AURAINTEL VPP & ENERGETICS TRANSACTIVE LEDGER (POSTGRESQL 16+ SERIALIZABLE)
 -- Organización Holding: guadalupelopezjose96-org (320717657398)
+-- Cumplimiento: FERC Order 2222, IEEE 1547-2018, NERC CIP, IRC Chapter 56 (AAUFSA)
 -- =============================================================================
 
 BEGIN TRANSACTION ISOLATION LEVEL SERIALIZABLE;
 
+ALTER DATABASE CURRENT SET default_transaction_isolation TO 'serializable';
+
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
 -- 1. Tabla de Telemetría Sincrofasorial y Eventos de Maniobra de Interruptores (WORM)
 CREATE TABLE IF NOT EXISTS vpp_synchrophasor_dispatch_events (
-    event_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    event_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     holding_org_id VARCHAR(32) NOT NULL DEFAULT '320717657398' CHECK (holding_org_id = '320717657398'),
     domain_id VARCHAR(32) NOT NULL CHECK (domain_id IN (
-        '877771073297',
-        '964521086569',
-        '188680247367',
-        '1087754464927',
-        '282230018778',
-        '358233233'
+        '877771073297', -- AuraTetrax-com
+        '964521086569', -- Fourphonix-com
+        '188680247367', -- AuraIntelCore-com
+        '1087754464927', -- AuraIntel-Global-com
+        '282230018778', -- Standard1979-com
+        '358233233'     -- Prophonix-com
     )),
     lifecycle_folder_id VARCHAR(32) NOT NULL CHECK (lifecycle_folder_id IN (
-        '938478392755',
-        '978426653396',
-        '467686749558',
-        '10470744625'
+        '938478392755', -- 01-Shared-Services
+        '978426653396', -- 02-Production
+        '467686749558', -- 03-Non-Production
+        '10470744625'   -- 04-Sandbox
     )),
     vpp_resource_id VARCHAR(128) NOT NULL,
     grid_freq_uhz BIGINT NOT NULL CHECK (grid_freq_uhz BETWEEN 59950000 AND 60050000),
@@ -42,7 +46,7 @@ CREATE TABLE IF NOT EXISTS vpp_synchrophasor_dispatch_events (
 
 -- 2. Libro Mayor de Energía Transaccional y Liquidación LMP / AAUFSA (Cabecera)
 CREATE TABLE IF NOT EXISTS energetics_settlement_entries (
-    entry_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    entry_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     idempotency_key VARCHAR(128) NOT NULL UNIQUE,
     domain_id VARCHAR(32) NOT NULL CHECK (domain_id IN (
         '877771073297', '964521086569', '188680247367',
@@ -64,7 +68,7 @@ CREATE TABLE IF NOT EXISTS energetics_settlement_entries (
 
 -- 3. Líneas de Partida Doble del Libro Mayor Energético
 CREATE TABLE IF NOT EXISTS energetics_settlement_lines (
-    line_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    line_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     entry_id UUID NOT NULL REFERENCES energetics_settlement_entries(entry_id) ON DELETE RESTRICT,
     domain_id VARCHAR(32) NOT NULL CHECK (domain_id IN (
         '877771073297', '964521086569', '188680247367',
@@ -143,17 +147,14 @@ ALTER TABLE energetics_settlement_entries FORCE ROW LEVEL SECURITY;
 ALTER TABLE energetics_settlement_lines ENABLE ROW LEVEL SECURITY;
 ALTER TABLE energetics_settlement_lines FORCE ROW LEVEL SECURITY;
 
-DROP POLICY IF EXISTS rls_vpp_events_tenant_isolation ON vpp_synchrophasor_dispatch_events;
 CREATE POLICY rls_vpp_events_tenant_isolation ON vpp_synchrophasor_dispatch_events
     USING (domain_id = current_setting('app.current_domain_id', true))
     WITH CHECK (domain_id = current_setting('app.current_domain_id', true));
 
-DROP POLICY IF EXISTS rls_settlement_entries_tenant_isolation ON energetics_settlement_entries;
 CREATE POLICY rls_settlement_entries_tenant_isolation ON energetics_settlement_entries
     USING (domain_id = current_setting('app.current_domain_id', true))
     WITH CHECK (domain_id = current_setting('app.current_domain_id', true));
 
-DROP POLICY IF EXISTS rls_settlement_lines_tenant_isolation ON energetics_settlement_lines;
 CREATE POLICY rls_settlement_lines_tenant_isolation ON energetics_settlement_lines
     USING (domain_id = current_setting('app.current_domain_id', true))
     WITH CHECK (domain_id = current_setting('app.current_domain_id', true));

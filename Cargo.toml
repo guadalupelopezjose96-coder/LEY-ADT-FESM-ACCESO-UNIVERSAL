@@ -1,17 +1,49 @@
 [package]
-name = "auraintel_vpp_grid_core"
-version = "2026.1.0"
+name = "sovereign-multi-entity-governor"
+version = "1.0.0"
 edition = "2021"
-authors = ["José Emanuel Guadalupe López <admin@auraintelcore.com>"]
-description = "Total Grid Energetics, Grid-Forming VPP Orchestrator, Synchrophasor Protection & IRC Chapter 56 (AAUFSA) Statutory Ledger Engine"
-license = "LicenseRef-Proprietary-GuadalupeLopezJose96-Org"
+license = "Apache-2.0 OR MIT"
 publish = false
 
-[dependencies]
-serde = { version = "1.0.210", default-features = false, features = ["derive", "alloc"] }
-serde_json = { version = "1.0.128", default-features = false, features = ["alloc"] }
-sha2 = { version = "0.10.8", default-features = false }
-uuid = { version = "1.10.0", default-features = false, features = ["v4", "serde"] }
+[lib]
+name = "sovereign_multi_entity_governor"
+path = "src/lib.rs"
+
+[[bin]]
+name = "aaufsa-simulator"
+path = "src/bin/aaufsa_simulator.rs"
+
+[[bin]]
+name = "auraintel-vpp-prod"
+path = "src/bin/auraintel_vpp_prod.rs"
+
+[[bin]]
+name = "aaufsa-irs-form8999"
+path = "src/bin/aaufsa_irs_form8999.rs"
+
+[[bin]]
+name = "prophonix-sonic-prod"
+path = "src/bin/prophonix_sonic_prod.rs"
+
+[[bin]]
+name = "fourphonix-pqc-prod"
+path = "src/bin/fourphonix_pqc_prod.rs"
+
+[[bin]]
+name = "sovereign-priority-prod"
+path = "src/bin/sovereign_priority_prod.rs"
+
+[[bin]]
+name = "sovereign-proscription-prod"
+path = "src/bin/sovereign_proscription_prod.rs"
+
+[[bin]]
+name = "auratetrax-edge-prod"
+path = "src/bin/auratetrax_edge_prod.rs"
+
+[[bin]]
+name = "standard1979-notary-prod"
+path = "src/bin/standard1979_notary_prod.rs"
 
 [profile.release]
 opt-level = 3
@@ -20,3 +52,16 @@ codegen-units = 1
 panic = "abort"
 strip = "symbols"
 overflow-checks = true
+
+[profile.dev]
+overflow-checks = true
+
+[dependencies]
+
+[[bin]]
+name = "proelite-master-orchestrator"
+path = "src/bin/proelite_master_orchestrator.rs"
+
+[[bin]]
+name = "gemini-cognitive-prod"
+path = "src/bin/gemini_cognitive_prod.rs"

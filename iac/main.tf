@@ -15,76 +15,41 @@ terraform {
 variable "holding_org_id" {
   type        = string
   default     = "320717657398"
+  description = "guadalupelopezjose96-org Holding ID"
 }
 
 variable "production_folder_id" {
   type        = string
   default     = "978426653396"
+  description = "02-Production Lifecycle Folder ID"
 }
 
-variable "project_id" {
-  type        = string
-  default     = "auraintel-vpp-prod-188680247367"
-}
+resource "google_org_policy_policy" "disable_sa_key_creation" {
+  name   = "organizations/${var.holding_org_id}/policies/iam.disableServiceAccountKeyCreation"
+  parent = "organizations/${var.holding_org_id}"
 
-variable "region" {
-  type    = string
-  default = "us-central1"
-}
-
-resource "google_compute_network" "nerc_cip_esp_vpc" {
-  name                            = "auraintel-vpp-nerc-cip005-esp-vpc"
-  project                         = var.project_id
-  auto_create_subnetworks         = false
-  routing_mode                    = "GLOBAL"
-  delete_default_routes_on_create = true
-}
-
-resource "google_compute_firewall" "esp_strict_ingress_mtls_wireguard" {
-  name      = "allow-only-pqc-wireguard-and-iec62351-mtls"
-  project   = var.project_id
-  network   = google_compute_network.nerc_cip_esp_vpc.name
-  direction = "INGRESS"
-  priority  = 100
-
-  allow {
-    protocol = "udp"
-    ports    = ["51820"]
-  }
-
-  allow {
-    protocol = "tcp"
-    ports    = ["3782", "8443"]
-  }
-
-  source_ranges = ["10.240.0.0/24"]
-  target_tags   = ["vpp-grid-governor"]
-}
-
-resource "google_kms_key_ring" "vpp_grid_hsm_keyring" {
-  name     = "auraintel-vpp-fips140-3-keyring"
-  project  = var.project_id
-  location = var.region
-}
-
-resource "google_kms_crypto_key" "iec62351_dispatch_signing_key" {
-  name     = "iec62351-dispatch-hsm-key"
-  key_ring = google_kms_key_ring.vpp_grid_hsm_keyring.id
-  purpose  = "ASYMMETRIC_SIGN"
-
-  version_template {
-    algorithm        = "EC_SIGN_P384_SHA384"
-    protection_level = "HSM"
-  }
-
-  lifecycle {
-    prevent_destroy = true
+  spec {
+    rules {
+      enforce = "TRUE"
+    }
   }
 }
 
-resource "google_storage_bucket" "worm_pmu_and_aaufsa_audit_vault" {
-  name                        = "auraintel-vpp-worm-vault-188680247367"
-  project                     = var.project_id
+resource "google_org_policy_policy" "restrict_gemini_api_targets" {
+  name   = "organizations/${var.holding_org_id}/policies/serviceusage.restrictApiTargets"
+  parent = "organizations/${var.holding_org_id}"
+
+  spec {
+    rules {
+      values {
+        allowed_values = ["service:generativelanguage.googleapis.com"]
+      }
+    }
+  }
+}
+
+resource "google_storage_bucket" "sovereign_worm_audit_vault" {
+  name                        = "guadalupelopezjose96-org-worm-audit-320717657398"
   location                    = "US"
   storage_class               = "STANDARD"
   uniform_bucket_level_access = true
@@ -92,7 +57,7 @@ resource "google_storage_bucket" "worm_pmu_and_aaufsa_audit_vault" {
 
   retention_policy {
     is_locked        = true
-    retention_period = 315576000
+    retention_period = 315360000
   }
 
   versioning {

@@ -1,0 +1,52 @@
+{
+  "deployment_state": "PRODUCTION_ACTIVE_100PCT",
+  "holding_org_id": "320717657398",
+  "lifecycle_folder": "02-Production (978426653396)",
+  "primary_domain": "auraintelcore.com (188680247367)",
+  "cyber_physical_engine": "AuraIntel VPP",
+  "gemini_endpoint_policy": "service:generativelanguage.googleapis.com (store:false)",
+  "ieee1547_frequency_envelope_hz": "59.950000 - 60.050000",
+  "substation_dispatches": [
+    {
+      "node_id": "VPP-CORE-NODE-01-BESS-PRIMARY",
+      "grid_zone": "auraintelcore.com/us-east-iso-ferc2222",
+      "frequency_hz": "60.000000",
+      "energy_mwh": "250000.000000",
+      "lmp_settlement_usd": "312500.000000",
+      "anti_islanding": "ARMED_SIL4",
+      "aaufsa_status": "SEC_5000H_D_EXEMPT_COMMITTED"
+    },
+    {
+      "node_id": "VPP-CORE-NODE-02-GRID-FORMING-INV",
+      "grid_zone": "auraintelcore.com/us-west-wecc-ieee1547",
+      "frequency_hz": "59.995000",
+      "energy_mwh": "180000.000000",
+      "lmp_settlement_usd": "225000.000000",
+      "anti_islanding": "ARMED_SIL4",
+      "aaufsa_status": "SEC_5000H_D_EXEMPT_COMMITTED"
+    },
+    {
+      "node_id": "VPP-CORE-NODE-03-HYDRO-SYNCHRO",
+      "grid_zone": "auraintelcore.com/cenace-sin-60hz",
+      "frequency_hz": "60.005000",
+      "energy_mwh": "420000.000000",
+      "lmp_settlement_usd": "504000.000000",
+      "anti_islanding": "ARMED_SIL4",
+      "aaufsa_status": "SEC_5000H_D_EXEMPT_COMMITTED"
+    },
+    {
+      "node_id": "VPP-CORE-NODE-04-DER-AGGREGATOR",
+      "grid_zone": "auraintelcore.com/global-edge-mesh",
+      "frequency_hz": "60.000000",
+      "energy_mwh": "150000.000000",
+      "lmp_settlement_usd": "195000.000000",
+      "anti_islanding": "ARMED_SIL4",
+      "aaufsa_status": "SEC_5000H_D_EXEMPT_COMMITTED"
+    }
+  ],
+  "production_totals": {
+    "total_energy_dispatched_mwh": "1000000.000000",
+    "total_lmp_settled_usd": "1236500.000000",
+    "total_gemini_tokens_attested": 16050000
+  }
+}
