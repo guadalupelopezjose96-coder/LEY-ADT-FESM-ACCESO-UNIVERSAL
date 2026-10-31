@@ -118,14 +118,21 @@ fn main() -> ExitCode {
     out.push_str("{\n");
     out.push_str("  \"deployment_state\": \"AURATETRAX_PRO_ELITE_PRODUCTION_ACTIVE_100PCT\",\n");
     out.push_str(&format!("  \"holding_org_id\": \"{ORG_HOLDING_ID}\",\n"));
-    out.push_str(&format!("  \"lifecycle_folder\": \"02-Production ({PRODUCTION_FOLDER_ID})\",\n"));
-    out.push_str(&format!("  \"primary_domain\": \"auratetrax.com ({AURATETRAX_TENANT_ID})\",\n"));
+    out.push_str(&format!(
+        "  \"lifecycle_folder\": \"02-Production ({PRODUCTION_FOLDER_ID})\",\n"
+    ));
+    out.push_str(&format!(
+        "  \"primary_domain\": \"auratetrax.com ({AURATETRAX_TENANT_ID})\",\n"
+    ));
     out.push_str("  \"edge_pmu_clusters\": [\n");
 
     for (idx, cl) in clusters.iter().enumerate() {
         out.push_str("    {\n");
         out.push_str(&format!("      \"cluster_id\": \"{}\",\n", cl.cluster_id));
-        out.push_str(&format!("      \"protocol\": \"{}\",\n", cl.protocol_standard));
+        out.push_str(&format!(
+            "      \"protocol\": \"{}\",\n",
+            cl.protocol_standard
+        ));
         match process_edge_cluster(cl) {
             Ok(settled) => {
                 total_settled = total_settled.saturating_add(settled.gross_amount_micros);
@@ -147,7 +154,10 @@ fn main() -> ExitCode {
         }
     }
     out.push_str("  ],\n");
-    out.push_str(&format!("  \"total_auratetrax_settled_usd\": \"{}\"\n}}\n", format_micros(total_settled)));
+    out.push_str(&format!(
+        "  \"total_auratetrax_settled_usd\": \"{}\"\n}}\n",
+        format_micros(total_settled)
+    ));
 
     if let Ok(mut f) = File::create("auratetrax_edge_production_state.json") {
         let _ = f.write_all(out.as_bytes());

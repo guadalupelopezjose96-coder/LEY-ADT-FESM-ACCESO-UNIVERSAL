@@ -224,19 +224,31 @@ fn main() -> ExitCode {
     out.push_str("{\n");
     out.push_str("  \"deployment_state\": \"SOVEREIGN_PRIORITY_ARBITRATION_ACTIVE_100PCT\",\n");
     out.push_str(&format!("  \"holding_org_id\": \"{ORG_HOLDING_ID}\",\n"));
-    out.push_str(&format!("  \"lifecycle_folder\": \"02-Production ({PRODUCTION_FOLDER_ID})\",\n"));
+    out.push_str(&format!(
+        "  \"lifecycle_folder\": \"02-Production ({PRODUCTION_FOLDER_ID})\",\n"
+    ));
     out.push_str("  \"domain_priority_slots\": [\n");
 
     for (idx, slot) in schedule.iter().enumerate() {
         out.push_str("    {\n");
         out.push_str(&format!("      \"slot_code\": \"{}\",\n", slot.slot_code));
-        out.push_str(&format!("      \"domain_fqdn\": \"{}\",\n", slot.domain_fqdn));
-        out.push_str(&format!("      \"tenant_id\": \"{}\",\n", slot.domain.tenant_id()));
-        out.push_str(&format!("      \"priority_tier\": {},\n", slot.priority_tier));
+        out.push_str(&format!(
+            "      \"domain_fqdn\": \"{}\",\n",
+            slot.domain_fqdn
+        ));
+        out.push_str(&format!(
+            "      \"tenant_id\": \"{}\",\n",
+            slot.domain.tenant_id()
+        ));
+        out.push_str(&format!(
+            "      \"priority_tier\": {},\n",
+            slot.priority_tier
+        ));
         out.push_str(&format!("      \"dscp_class\": \"{}\",\n", slot.dscp_class));
         match arbitrate_and_settle_slot(slot) {
             Ok(settled) => {
-                total_settled_micros = total_settled_micros.saturating_add(settled.gross_amount_micros);
+                total_settled_micros =
+                    total_settled_micros.saturating_add(settled.gross_amount_micros);
                 out.push_str("      \"status\": \"PREEMPTIVELY_DISPATCHED_AND_SETTLED\",\n");
                 out.push_str(&format!(
                     "      \"settled_usd\": \"{}\"\n",

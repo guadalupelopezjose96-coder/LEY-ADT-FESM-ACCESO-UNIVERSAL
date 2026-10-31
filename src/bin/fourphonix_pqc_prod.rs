@@ -114,8 +114,12 @@ fn main() -> ExitCode {
     out.push_str("{\n");
     out.push_str("  \"deployment_state\": \"FOURPHONIX_PQC_PRODUCTION_ACTIVE_100PCT\",\n");
     out.push_str(&format!("  \"holding_org_id\": \"{ORG_HOLDING_ID}\",\n"));
-    out.push_str(&format!("  \"lifecycle_folder\": \"02-Production ({PRODUCTION_FOLDER_ID})\",\n"));
-    out.push_str(&format!("  \"primary_domain\": \"fourphonix.com ({FOURPHONIX_TENANT_ID})\",\n"));
+    out.push_str(&format!(
+        "  \"lifecycle_folder\": \"02-Production ({PRODUCTION_FOLDER_ID})\",\n"
+    ));
+    out.push_str(&format!(
+        "  \"primary_domain\": \"fourphonix.com ({FOURPHONIX_TENANT_ID})\",\n"
+    ));
     out.push_str("  \"pqc_standard\": \"NIST FIPS 203 ML-KEM-768 + IEEE 802.1AE MACsec\",\n");
     out.push_str("  \"backbone_tunnels\": [\n");
 
@@ -123,15 +127,22 @@ fn main() -> ExitCode {
         out.push_str("    {\n");
         out.push_str(&format!("      \"tunnel_id\": \"{}\",\n", tn.tunnel_id));
         out.push_str(&format!("      \"corridor\": \"{}\",\n", tn.route_corridor));
-        out.push_str(&format!("      \"ml_kem_768_active\": {},\n", tn.ml_kem_768_active));
+        out.push_str(&format!(
+            "      \"ml_kem_768_active\": {},\n",
+            tn.ml_kem_768_active
+        ));
         out.push_str(&format!("      \"macsec_active\": {},\n", tn.macsec_active));
 
         match verify_and_settle_tunnel(tn) {
             Ok(settled) => {
                 total_bytes = total_bytes.saturating_add(tn.bytes_transferred);
-                total_settled_micros = total_settled_micros.saturating_add(settled.gross_amount_micros);
+                total_settled_micros =
+                    total_settled_micros.saturating_add(settled.gross_amount_micros);
                 out.push_str("      \"status\": \"PQC_ENCRYPTED_AND_SETTLED\",\n");
-                out.push_str(&format!("      \"bytes_transferred\": {},\n", tn.bytes_transferred));
+                out.push_str(&format!(
+                    "      \"bytes_transferred\": {},\n",
+                    tn.bytes_transferred
+                ));
                 out.push_str(&format!(
                     "      \"settled_usd\": \"{}\"\n",
                     format_micros(settled.gross_amount_micros)
@@ -151,7 +162,9 @@ fn main() -> ExitCode {
     }
 
     out.push_str("  ],\n");
-    out.push_str(&format!("  \"total_verified_bytes_transferred\": {total_bytes},\n"));
+    out.push_str(&format!(
+        "  \"total_verified_bytes_transferred\": {total_bytes},\n"
+    ));
     out.push_str(&format!(
         "  \"total_fourphonix_settled_usd\": \"{}\"\n}}\n",
         format_micros(total_settled_micros)

@@ -51,9 +51,7 @@ pub fn format_usd(micros: i128) -> String {
     format!("{whole}.{frac:06}")
 }
 
-fn verify_middleware_gate(
-    ch: &MiddlewareOidcGateChannel,
-) -> Result<i128, MiddlewareGateError> {
+fn verify_middleware_gate(ch: &MiddlewareOidcGateChannel) -> Result<i128, MiddlewareGateError> {
     if ch.static_key_detected {
         return Err(MiddlewareGateError::StaticServiceAccountKeyForbidden);
     }
@@ -148,16 +146,37 @@ fn main() -> ExitCode {
 
     let mut out = String::with_capacity(4096);
     out.push_str("{\n");
-    out.push_str("  \"middleware_state\": \"PRO_ELITE_ZERO_TRUST_OIDC_MIDDLEWARE_ACTIVE_100PCT\",\n");
+    out.push_str(
+        "  \"middleware_state\": \"PRO_ELITE_ZERO_TRUST_OIDC_MIDDLEWARE_ACTIVE_100PCT\",\n",
+    );
     out.push_str(&format!("  \"holding_org_id\": \"{ORG_HOLDING_ID}\",\n"));
-    out.push_str(&format!("  \"lifecycle_folder\": \"02-Production ({prod_folder})\",\n"));
-    out.push_str(&format!("  \"governed_services_matrix\": {OPTIMAL_SERVICES_COUNT},\n"));
+    out.push_str(&format!(
+        "  \"lifecycle_folder\": \"02-Production ({prod_folder})\",\n"
+    ));
+    out.push_str(&format!(
+        "  \"governed_services_matrix\": {OPTIMAL_SERVICES_COUNT},\n"
+    ));
     out.push_str("  \"standard1979_clawback_audit\": {\n");
-    out.push_str(&format!("    \"base_tax_15_30_pct_usd\": \"{}\",\n", format_usd(CLAWBACK_BASE_TAX_MICROS)));
-    out.push_str(&format!("    \"surcharge_sec_5000g_c_usd\": \"{}\",\n", format_usd(CLAWBACK_SURCHARGE_2PCT_MICROS)));
-    out.push_str(&format!("    \"total_clawback_settled_usd\": \"{}\",\n", format_usd(CLAWBACK_TOTAL_MICROS)));
-    out.push_str(&format!("    \"oasi_trust_fund_75pct_usd\": \"{}\",\n", format_usd(CLAWBACK_OASI_75_MICROS)));
-    out.push_str(&format!("    \"workforce_reskilling_25pct_usd\": \"{}\"\n", format_usd(CLAWBACK_RESKILLING_25_MICROS)));
+    out.push_str(&format!(
+        "    \"base_tax_15_30_pct_usd\": \"{}\",\n",
+        format_usd(CLAWBACK_BASE_TAX_MICROS)
+    ));
+    out.push_str(&format!(
+        "    \"surcharge_sec_5000g_c_usd\": \"{}\",\n",
+        format_usd(CLAWBACK_SURCHARGE_2PCT_MICROS)
+    ));
+    out.push_str(&format!(
+        "    \"total_clawback_settled_usd\": \"{}\",\n",
+        format_usd(CLAWBACK_TOTAL_MICROS)
+    ));
+    out.push_str(&format!(
+        "    \"oasi_trust_fund_75pct_usd\": \"{}\",\n",
+        format_usd(CLAWBACK_OASI_75_MICROS)
+    ));
+    out.push_str(&format!(
+        "    \"workforce_reskilling_25pct_usd\": \"{}\"\n",
+        format_usd(CLAWBACK_RESKILLING_25_MICROS)
+    ));
     out.push_str("  },\n");
     out.push_str("  \"middleware_gates\": [\n");
 
@@ -166,13 +185,19 @@ fn main() -> ExitCode {
         out.push_str(&format!("      \"gate_id\": \"{}\",\n", ch.gate_id));
         out.push_str(&format!("      \"workflow\": \"{}\",\n", ch.workflow_name));
         out.push_str(&format!("      \"domain_fqdn\": \"{}\",\n", ch.domain_fqdn));
-        out.push_str(&format!("      \"tenant_id\": \"{}\",\n", ch.domain.tenant_id()));
+        out.push_str(&format!(
+            "      \"tenant_id\": \"{}\",\n",
+            ch.domain.tenant_id()
+        ));
 
         match verify_middleware_gate(ch) {
             Ok(settled) => {
                 total_settled = total_settled.saturating_add(settled);
                 out.push_str("      \"status\": \"KEYLESS_OIDC_AND_RLS_VERIFIED\",\n");
-                out.push_str(&format!("      \"settled_usd\": \"{}\"\n", format_usd(settled)));
+                out.push_str(&format!(
+                    "      \"settled_usd\": \"{}\"\n",
+                    format_usd(settled)
+                ));
             }
             Err(err) => {
                 out.push_str("      \"status\": \"BLOCKED_FAIL_CLOSED\",\n");
@@ -187,7 +212,10 @@ fn main() -> ExitCode {
     }
 
     out.push_str("  ],\n");
-    out.push_str(&format!("  \"total_middleware_settled_usd\": \"{}\"\n}}\n", format_usd(total_settled)));
+    out.push_str(&format!(
+        "  \"total_middleware_settled_usd\": \"{}\"\n}}\n",
+        format_usd(total_settled)
+    ));
 
     if let Ok(mut f) = File::create("middleware_compliance_gate_production_state.json") {
         let _ = f.write_all(out.as_bytes());

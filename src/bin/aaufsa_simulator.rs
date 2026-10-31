@@ -89,7 +89,11 @@ pub fn sha256_digest(message: &[u8]) -> [u8; 32] {
             let ch = (e & f) ^ ((!e) & g);
             let ki = SHA256_K.get(i).copied().unwrap_or(0);
             let wi = w.get(i).copied().unwrap_or(0);
-            let t1 = hh.wrapping_add(s1).wrapping_add(ch).wrapping_add(ki).wrapping_add(wi);
+            let t1 = hh
+                .wrapping_add(s1)
+                .wrapping_add(ch)
+                .wrapping_add(ki)
+                .wrapping_add(wi);
             let s0 = a.rotate_right(2) ^ a.rotate_right(13) ^ a.rotate_right(22);
             let maj = (a & b) ^ (a & c) ^ (b & c);
             let t2 = s0.wrapping_add(maj);
@@ -126,7 +130,9 @@ pub fn sha256_digest(message: &[u8]) -> [u8; 32] {
 
 #[must_use]
 pub fn to_hex_string(bytes: &[u8]) -> String {
-    const HEX: [char; 16] = ['0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f'];
+    const HEX: [char; 16] = [
+        '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f',
+    ];
     let mut s = String::with_capacity(bytes.len().saturating_mul(2));
     for b in bytes {
         s.push(HEX.get(usize::from(b >> 4)).copied().unwrap_or('0'));
@@ -169,10 +175,11 @@ fn run_scenario(scn: &Scenario) -> Outcome {
         true,
         2,
     );
-    let attested: SovereignOperation<AttestedAndCompliantAction> = match op.verify_safety_and_policy() {
-        Ok(v) => v,
-        Err(e) => return Outcome::Blocked(e),
-    };
+    let attested: SovereignOperation<AttestedAndCompliantAction> =
+        match op.verify_safety_and_policy() {
+            Ok(v) => v,
+            Err(e) => return Outcome::Blocked(e),
+        };
     match attested.settle_statutory_ledger(scn.ctx) {
         Ok(s) => Outcome::Settled(s),
         Err(e) => Outcome::Blocked(e),
@@ -314,9 +321,15 @@ fn main() -> ExitCode {
     let scenarios = build_scenarios();
     let mut body = String::with_capacity(4096);
     body.push_str("{\n");
-    body.push_str(&format!("  \"holding_organization_id\": \"{ORG_HOLDING_ID}\",\n"));
-    body.push_str(&format!("  \"tax_rate_bps\": {AAUFSA_TAX_RATE_NUMERATOR},\n"));
-    body.push_str(&format!("  \"safe_harbor_months\": {AAUFSA_SAFE_HARBOR_MONTHS},\n"));
+    body.push_str(&format!(
+        "  \"holding_organization_id\": \"{ORG_HOLDING_ID}\",\n"
+    ));
+    body.push_str(&format!(
+        "  \"tax_rate_bps\": {AAUFSA_TAX_RATE_NUMERATOR},\n"
+    ));
+    body.push_str(&format!(
+        "  \"safe_harbor_months\": {AAUFSA_SAFE_HARBOR_MONTHS},\n"
+    ));
     body.push_str(&format!(
         "  \"small_business_threshold_usd\": \"{}\",\n",
         format_usd_micros(AAUFSA_SMALL_BUSINESS_THRESHOLD_MICROS)
@@ -328,17 +341,38 @@ fn main() -> ExitCode {
         body.push_str("    {\n");
         body.push_str(&format!("      \"code\": \"{}\",\n", scn.code));
         body.push_str(&format!("      \"domain\": \"{}\",\n", scn.name));
-        body.push_str(&format!("      \"tenant_id\": \"{}\",\n", scn.domain.tenant_id()));
+        body.push_str(&format!(
+            "      \"tenant_id\": \"{}\",\n",
+            scn.domain.tenant_id()
+        ));
         match out {
             Outcome::Settled(op) => {
                 body.push_str("      \"status\": \"COMMITTED_SERIALIZABLE\",\n");
                 if let Some(det) = op.tax_determination {
-                    body.push_str(&format!("      \"cloud_saas_exempt\": {},\n", det.cloud_saas_exempt));
-                    body.push_str(&format!("      \"safe_harbor_applied\": {},\n", det.safe_harbor_applied));
-                    body.push_str(&format!("      \"clawback_triggered\": {},\n", det.clawback_triggered));
-                    body.push_str(&format!("      \"tax_usd\": \"{}\",\n", format_usd_micros(det.total_chapter56_tax_micros)));
-                    body.push_str(&format!("      \"oasi_75_usd\": \"{}\",\n", format_usd_micros(det.oasi_di_trust_fund_75_micros)));
-                    body.push_str(&format!("      \"reskilling_25_usd\": \"{}\"\n", format_usd_micros(det.workforce_reskilling_25_micros)));
+                    body.push_str(&format!(
+                        "      \"cloud_saas_exempt\": {},\n",
+                        det.cloud_saas_exempt
+                    ));
+                    body.push_str(&format!(
+                        "      \"safe_harbor_applied\": {},\n",
+                        det.safe_harbor_applied
+                    ));
+                    body.push_str(&format!(
+                        "      \"clawback_triggered\": {},\n",
+                        det.clawback_triggered
+                    ));
+                    body.push_str(&format!(
+                        "      \"tax_usd\": \"{}\",\n",
+                        format_usd_micros(det.total_chapter56_tax_micros)
+                    ));
+                    body.push_str(&format!(
+                        "      \"oasi_75_usd\": \"{}\",\n",
+                        format_usd_micros(det.oasi_di_trust_fund_75_micros)
+                    ));
+                    body.push_str(&format!(
+                        "      \"reskilling_25_usd\": \"{}\"\n",
+                        format_usd_micros(det.workforce_reskilling_25_micros)
+                    ));
                 }
             }
             Outcome::Blocked(err) => {

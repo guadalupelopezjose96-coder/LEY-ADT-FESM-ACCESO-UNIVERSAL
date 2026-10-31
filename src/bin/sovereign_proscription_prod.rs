@@ -187,17 +187,31 @@ fn main() -> ExitCode {
     out.push_str("{\n");
     out.push_str("  \"deployment_state\": \"SOVEREIGN_PROSCRIPTION_ENFORCEMENT_ACTIVE_100PCT\",\n");
     out.push_str(&format!("  \"holding_org_id\": \"{ORG_HOLDING_ID}\",\n"));
-    out.push_str("  \"enforcement_doctrine\": \"Make Illegal States Unrepresentable + Fail-Closed\",\n");
+    out.push_str(
+        "  \"enforcement_doctrine\": \"Make Illegal States Unrepresentable + Fail-Closed\",\n",
+    );
     out.push_str("  \"proscribed_cases_verified\": [\n");
 
     for (idx, case) in battery.iter().enumerate() {
         let verdict = enforce_proscription_case(case);
         out.push_str("    {\n");
         out.push_str(&format!("      \"case_id\": \"{}\",\n", case.case_id));
-        out.push_str(&format!("      \"domain_fqdn\": \"{}\",\n", case.domain_fqdn));
-        out.push_str(&format!("      \"tenant_id\": \"{}\",\n", case.domain.tenant_id()));
-        out.push_str(&format!("      \"proscribed_act\": \"{}\",\n", case.proscribed_act));
-        out.push_str(&format!("      \"statutory_basis\": \"{}\",\n", case.statutory_basis));
+        out.push_str(&format!(
+            "      \"domain_fqdn\": \"{}\",\n",
+            case.domain_fqdn
+        ));
+        out.push_str(&format!(
+            "      \"tenant_id\": \"{}\",\n",
+            case.domain.tenant_id()
+        ));
+        out.push_str(&format!(
+            "      \"proscribed_act\": \"{}\",\n",
+            case.proscribed_act
+        ));
+        out.push_str(&format!(
+            "      \"statutory_basis\": \"{}\",\n",
+            case.statutory_basis
+        ));
 
         match verdict {
             ProscriptionVerdict::IllegalityBlockedFailClosed(err) if err == case.expected_error => {
@@ -219,7 +233,9 @@ fn main() -> ExitCode {
     }
 
     out.push_str("  ],\n");
-    out.push_str(&format!("  \"total_illegal_states_neutralized\": {blocked_count}\n}}\n"));
+    out.push_str(&format!(
+        "  \"total_illegal_states_neutralized\": {blocked_count}\n}}\n"
+    ));
 
     if let Ok(mut f) = File::create("sovereign_proscription_production_state.json") {
         let _ = f.write_all(out.as_bytes());

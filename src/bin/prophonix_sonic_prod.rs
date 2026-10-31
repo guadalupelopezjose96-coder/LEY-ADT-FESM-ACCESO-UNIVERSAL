@@ -112,8 +112,12 @@ fn main() -> ExitCode {
     out.push_str("{\n");
     out.push_str("  \"deployment_state\": \"PROPHONIX_SONIC_PRODUCTION_ACTIVE_100PCT\",\n");
     out.push_str(&format!("  \"holding_org_id\": \"{ORG_HOLDING_ID}\",\n"));
-    out.push_str(&format!("  \"lifecycle_folder\": \"02-Production ({PRODUCTION_FOLDER_ID})\",\n"));
-    out.push_str(&format!("  \"primary_domain\": \"prophonix.com ({PROPHONIX_TENANT_ID})\",\n"));
+    out.push_str(&format!(
+        "  \"lifecycle_folder\": \"02-Production ({PRODUCTION_FOLDER_ID})\",\n"
+    ));
+    out.push_str(&format!(
+        "  \"primary_domain\": \"prophonix.com ({PROPHONIX_TENANT_ID})\",\n"
+    ));
     out.push_str(&format!(
         "  \"true_peak_ceiling_dbtp\": \"{}\",\n",
         format_signed_micros(MAX_ALLOWED_TRUE_PEAK_MICRO_DBTP)
@@ -123,7 +127,10 @@ fn main() -> ExitCode {
     for (idx, st) in streams.iter().enumerate() {
         out.push_str("    {\n");
         out.push_str(&format!("      \"stream_id\": \"{}\",\n", st.stream_id));
-        out.push_str(&format!("      \"profile\": \"{}\",\n", st.standard_profile));
+        out.push_str(&format!(
+            "      \"profile\": \"{}\",\n",
+            st.standard_profile
+        ));
         out.push_str(&format!(
             "      \"integrated_lufs\": \"{}\",\n",
             format_signed_micros(st.integrated_micro_lufs)
@@ -135,7 +142,8 @@ fn main() -> ExitCode {
 
         match process_sonic_stream(st) {
             Ok(settled) => {
-                total_settled_micros = total_settled_micros.saturating_add(settled.gross_amount_micros);
+                total_settled_micros =
+                    total_settled_micros.saturating_add(settled.gross_amount_micros);
                 out.push_str("      \"status\": \"NORMALIZED_AND_SETTLED\",\n");
                 out.push_str(&format!(
                     "      \"settled_usd\": \"{}\"\n",

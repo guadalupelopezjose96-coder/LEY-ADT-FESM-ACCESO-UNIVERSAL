@@ -122,18 +122,29 @@ fn main() -> ExitCode {
 
     let mut out = String::with_capacity(4096);
     out.push_str("{\n");
-    out.push_str("  \"deployment_state\": \"STANDARD1979_PRO_ELITE_36_SERVICES_CERTIFIED_100PCT\",\n");
+    out.push_str(
+        "  \"deployment_state\": \"STANDARD1979_PRO_ELITE_36_SERVICES_CERTIFIED_100PCT\",\n",
+    );
     out.push_str(&format!("  \"holding_org_id\": \"{ORG_HOLDING_ID}\",\n"));
-    out.push_str(&format!("  \"lifecycle_folder\": \"02-Production ({PRODUCTION_FOLDER_ID})\",\n"));
-    out.push_str(&format!("  \"notary_authority\": \"standard1979.com ({STANDARD1979_TENANT_ID})\",\n"));
-    out.push_str(&format!("  \"target_service_matrix_count\": {TOTAL_GOVERNED_SERVICES},\n"));
+    out.push_str(&format!(
+        "  \"lifecycle_folder\": \"02-Production ({PRODUCTION_FOLDER_ID})\",\n"
+    ));
+    out.push_str(&format!(
+        "  \"notary_authority\": \"standard1979.com ({STANDARD1979_TENANT_ID})\",\n"
+    ));
+    out.push_str(&format!(
+        "  \"target_service_matrix_count\": {TOTAL_GOVERNED_SERVICES},\n"
+    ));
     out.push_str("  \"certified_domains_matrix\": [\n");
 
     for (idx, row) in grid.iter().enumerate() {
         let settled = match certify_domain_row(row) {
             Ok(s) => s,
             Err(e) => {
-                eprintln!("[FATAL] Error de certificación en {}: {e:?}", row.domain_fqdn);
+                eprintln!(
+                    "[FATAL] Error de certificación en {}: {e:?}",
+                    row.domain_fqdn
+                );
                 return ExitCode::from(1);
             }
         };
@@ -141,9 +152,18 @@ fn main() -> ExitCode {
         total_notary_settled = total_notary_settled.saturating_add(settled.gross_amount_micros);
 
         out.push_str("    {\n");
-        out.push_str(&format!("      \"domain_fqdn\": \"{}\",\n", row.domain_fqdn));
-        out.push_str(&format!("      \"tenant_id\": \"{}\",\n", row.domain.tenant_id()));
-        out.push_str(&format!("      \"certified_services_count\": {},\n", row.active_layers));
+        out.push_str(&format!(
+            "      \"domain_fqdn\": \"{}\",\n",
+            row.domain_fqdn
+        ));
+        out.push_str(&format!(
+            "      \"tenant_id\": \"{}\",\n",
+            row.domain.tenant_id()
+        ));
+        out.push_str(&format!(
+            "      \"certified_services_count\": {},\n",
+            row.active_layers
+        ));
         out.push_str("      \"worm_10yr_retention\": \"LOCKED_COMPLIANCE\",\n");
         out.push_str("      \"pqc_signature\": \"FIPS_204_ML_DSA_VERIFIED\",\n");
         out.push_str(&format!(
@@ -158,7 +178,9 @@ fn main() -> ExitCode {
     }
 
     out.push_str("  ],\n");
-    out.push_str(&format!("  \"total_certified_services_active\": {verified_services_sum},\n"));
+    out.push_str(&format!(
+        "  \"total_certified_services_active\": {verified_services_sum},\n"
+    ));
     out.push_str(&format!(
         "  \"total_standard1979_settled_usd\": \"{}\"\n}}\n",
         format_micros(total_notary_settled)

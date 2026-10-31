@@ -157,14 +157,25 @@ fn main() -> ExitCode {
 
     let mut out = String::with_capacity(4096);
     out.push_str("{\n");
-    out.push_str("  \"gateway_state\": \"GEMINI_ENTERPRISE_GATEWAY_PRO_ELITE_36_SERVICES_ACTIVE_100PCT\",\n");
+    out.push_str(
+        "  \"gateway_state\": \"GEMINI_ENTERPRISE_GATEWAY_PRO_ELITE_36_SERVICES_ACTIVE_100PCT\",\n",
+    );
     out.push_str(&format!("  \"holding_org_id\": \"{ORG_HOLDING_ID}\",\n"));
-    out.push_str(&format!("  \"lifecycle_folder\": \"02-Production ({PRODUCTION_FOLDER_ID})\",\n"));
+    out.push_str(&format!(
+        "  \"lifecycle_folder\": \"02-Production ({PRODUCTION_FOLDER_ID})\",\n"
+    ));
     out.push_str("  \"optimal_service_architecture\": \"36 Pro-Elite Services (6 Domains x 6 Core Layers)\",\n");
     out.push_str("  \"live_web_telemetry_sync\": {\n");
-    out.push_str(&format!("    \"auraintelcore_bus1_active_mw\": {LIVE_VPP_BUS1_ACTIVE_MW},\n"));
-    out.push_str(&format!("    \"auraintelcore_bus1_freq_hz\": \"{}\",\n", format_usd(LIVE_VPP_BUS1_FREQ_MICRO_HZ)));
-    out.push_str(&format!("    \"auraintelcore_bus1_current_ma\": {LIVE_VPP_BUS1_CURRENT_MA},\n"));
+    out.push_str(&format!(
+        "    \"auraintelcore_bus1_active_mw\": {LIVE_VPP_BUS1_ACTIVE_MW},\n"
+    ));
+    out.push_str(&format!(
+        "    \"auraintelcore_bus1_freq_hz\": \"{}\",\n",
+        format_usd(LIVE_VPP_BUS1_FREQ_MICRO_HZ)
+    ));
+    out.push_str(&format!(
+        "    \"auraintelcore_bus1_current_ma\": {LIVE_VPP_BUS1_CURRENT_MA},\n"
+    ));
     out.push_str(&format!(
         "    \"standard1979_clawback_total_usd\": \"{}\",\n",
         format_usd(LIVE_STANDARD1979_BASE_PLUS_CLAWBACK_MICROS)
@@ -184,15 +195,22 @@ fn main() -> ExitCode {
         out.push_str("    {\n");
         out.push_str(&format!("      \"channel_id\": \"{}\",\n", ch.channel_id));
         out.push_str(&format!("      \"domain_fqdn\": \"{}\",\n", ch.domain_fqdn));
-        out.push_str(&format!("      \"tenant_id\": \"{}\",\n", ch.domain.tenant_id()));
+        out.push_str(&format!(
+            "      \"tenant_id\": \"{}\",\n",
+            ch.domain.tenant_id()
+        ));
         out.push_str(&format!("      \"github_repo\": \"{}\",\n", ch.github_repo));
 
         match dispatch_gemini_gateway(ch) {
             Ok(settled) => {
                 total_tokens = total_tokens.saturating_add(ch.tokens_consumed);
-                total_settled_micros = total_settled_micros.saturating_add(settled.gross_amount_micros);
+                total_settled_micros =
+                    total_settled_micros.saturating_add(settled.gross_amount_micros);
                 out.push_str("      \"status\": \"ZERO_RETENTION_VERIFIED_AND_SETTLED\",\n");
-                out.push_str(&format!("      \"tokens_consumed\": {},\n", ch.tokens_consumed));
+                out.push_str(&format!(
+                    "      \"tokens_consumed\": {},\n",
+                    ch.tokens_consumed
+                ));
                 out.push_str(&format!(
                     "      \"settled_usd\": \"{}\"\n",
                     format_usd(settled.gross_amount_micros)
@@ -211,7 +229,9 @@ fn main() -> ExitCode {
     }
 
     out.push_str("  ],\n");
-    out.push_str(&format!("  \"total_gemini_tokens_processed\": {total_tokens},\n"));
+    out.push_str(&format!(
+        "  \"total_gemini_tokens_processed\": {total_tokens},\n"
+    ));
     out.push_str(&format!(
         "  \"total_gemini_gateway_settled_usd\": \"{}\"\n}}\n",
         format_usd(total_settled_micros)

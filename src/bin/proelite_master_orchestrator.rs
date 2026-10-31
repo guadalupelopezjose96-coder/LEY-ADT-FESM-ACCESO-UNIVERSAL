@@ -131,7 +131,9 @@ fn main() -> ExitCode {
     out.push_str("{\n");
     out.push_str("  \"orchestrator_state\": \"PRO_ELITE_MASTER_HOLDING_CONSOLIDATED_100PCT\",\n");
     out.push_str(&format!("  \"holding_org_id\": \"{ORG_HOLDING_ID}\",\n"));
-    out.push_str("  \"holding_name\": \"guadalupelopezjose96-org (Tech Arquitecture Pro-Elite)\",\n");
+    out.push_str(
+        "  \"holding_name\": \"guadalupelopezjose96-org (Tech Arquitecture Pro-Elite)\",\n",
+    );
     out.push_str(&format!("  \"production_folder_id\": \"{prod_folder}\",\n"));
     out.push_str("  \"consolidated_divisions\": [\n");
 
@@ -142,17 +144,43 @@ fn main() -> ExitCode {
         total_oasi_micros = total_oasi_micros.saturating_add(div.oasi_di_75_micros);
         total_reskilling_micros = total_reskilling_micros.saturating_add(div.reskilling_25_micros);
 
-        let net_after_tax = div.gross_settled_micros.saturating_sub(div.aaufsa_tax_micros);
+        let net_after_tax = div
+            .gross_settled_micros
+            .saturating_sub(div.aaufsa_tax_micros);
 
         out.push_str("    {\n");
-        out.push_str(&format!("      \"division_code\": \"{}\",\n", div.division_code));
-        out.push_str(&format!("      \"domain_fqdn\": \"{}\",\n", div.domain_fqdn));
-        out.push_str(&format!("      \"tenant_id\": \"{}\",\n", div.domain.tenant_id()));
-        out.push_str(&format!("      \"primary_engine\": \"{}\",\n", div.engine_binary));
-        out.push_str(&format!("      \"active_services\": {},\n", div.active_services));
-        out.push_str(&format!("      \"gross_settled_usd\": \"{}\",\n", format_usd(div.gross_settled_micros)));
-        out.push_str(&format!("      \"aaufsa_tax_usd\": \"{}\",\n", format_usd(div.aaufsa_tax_micros)));
-        out.push_str(&format!("      \"net_retained_usd\": \"{}\"\n", format_usd(net_after_tax)));
+        out.push_str(&format!(
+            "      \"division_code\": \"{}\",\n",
+            div.division_code
+        ));
+        out.push_str(&format!(
+            "      \"domain_fqdn\": \"{}\",\n",
+            div.domain_fqdn
+        ));
+        out.push_str(&format!(
+            "      \"tenant_id\": \"{}\",\n",
+            div.domain.tenant_id()
+        ));
+        out.push_str(&format!(
+            "      \"primary_engine\": \"{}\",\n",
+            div.engine_binary
+        ));
+        out.push_str(&format!(
+            "      \"active_services\": {},\n",
+            div.active_services
+        ));
+        out.push_str(&format!(
+            "      \"gross_settled_usd\": \"{}\",\n",
+            format_usd(div.gross_settled_micros)
+        ));
+        out.push_str(&format!(
+            "      \"aaufsa_tax_usd\": \"{}\",\n",
+            format_usd(div.aaufsa_tax_micros)
+        ));
+        out.push_str(&format!(
+            "      \"net_retained_usd\": \"{}\"\n",
+            format_usd(net_after_tax)
+        ));
         if idx < 5 {
             out.push_str("    },\n");
         } else {
@@ -164,12 +192,29 @@ fn main() -> ExitCode {
 
     out.push_str("  ],\n");
     out.push_str("  \"holding_master_balance_sheet\": {\n");
-    out.push_str(&format!("    \"total_active_pro_elite_services\": {total_services},\n"));
-    out.push_str(&format!("    \"total_gross_volume_settled_usd\": \"{}\",\n", format_usd(total_gross_micros)));
-    out.push_str(&format!("    \"total_aaufsa_chapter56_tax_usd\": \"{}\",\n", format_usd(total_tax_micros)));
-    out.push_str(&format!("    \"trust_fund_oasi_di_75pct_usd\": \"{}\",\n", format_usd(total_oasi_micros)));
-    out.push_str(&format!("    \"trust_fund_workforce_reskilling_25pct_usd\": \"{}\",\n", format_usd(total_reskilling_micros)));
-    out.push_str(&format!("    \"total_net_holding_equity_usd\": \"{}\",\n", format_usd(total_net_micros)));
+    out.push_str(&format!(
+        "    \"total_active_pro_elite_services\": {total_services},\n"
+    ));
+    out.push_str(&format!(
+        "    \"total_gross_volume_settled_usd\": \"{}\",\n",
+        format_usd(total_gross_micros)
+    ));
+    out.push_str(&format!(
+        "    \"total_aaufsa_chapter56_tax_usd\": \"{}\",\n",
+        format_usd(total_tax_micros)
+    ));
+    out.push_str(&format!(
+        "    \"trust_fund_oasi_di_75pct_usd\": \"{}\",\n",
+        format_usd(total_oasi_micros)
+    ));
+    out.push_str(&format!(
+        "    \"trust_fund_workforce_reskilling_25pct_usd\": \"{}\",\n",
+        format_usd(total_reskilling_micros)
+    ));
+    out.push_str(&format!(
+        "    \"total_net_holding_equity_usd\": \"{}\",\n",
+        format_usd(total_net_micros)
+    ));
     out.push_str("    \"double_entry_zero_sum_verified\": true\n");
     out.push_str("  }\n}\n");
 

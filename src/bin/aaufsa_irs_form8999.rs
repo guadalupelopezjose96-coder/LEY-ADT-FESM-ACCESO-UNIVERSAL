@@ -87,7 +87,11 @@ pub fn sha256_digest(message: &[u8]) -> [u8; 32] {
             let ch = (e & f) ^ ((!e) & g);
             let ki = SHA256_K.get(i).copied().unwrap_or(0);
             let wi = w.get(i).copied().unwrap_or(0);
-            let t1 = hh.wrapping_add(s1).wrapping_add(ch).wrapping_add(ki).wrapping_add(wi);
+            let t1 = hh
+                .wrapping_add(s1)
+                .wrapping_add(ch)
+                .wrapping_add(ki)
+                .wrapping_add(wi);
             let s0 = a.rotate_right(2) ^ a.rotate_right(13) ^ a.rotate_right(22);
             let maj = (a & b) ^ (a & c) ^ (b & c);
             let t2 = s0.wrapping_add(maj);
@@ -124,7 +128,9 @@ pub fn sha256_digest(message: &[u8]) -> [u8; 32] {
 
 #[must_use]
 pub fn to_hex(bytes: &[u8]) -> String {
-    const HEX: [char; 16] = ['0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f'];
+    const HEX: [char; 16] = [
+        '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f',
+    ];
     let mut s = String::with_capacity(bytes.len().saturating_mul(2));
     for b in bytes {
         s.push(HEX.get(usize::from(b >> 4)).copied().unwrap_or('0'));
@@ -258,24 +264,47 @@ fn generate_irs_form8999_xml() -> String {
 
     let mut xml = String::with_capacity(6144);
     xml.push_str("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
-    xml.push_str("<IRSForm8999Return xmlns=\"urn:us:gov:treasury:irs:aaufsa:ch56\" version=\"2026v1.0\">\n");
+    xml.push_str(
+        "<IRSForm8999Return xmlns=\"urn:us:gov:treasury:irs:aaufsa:ch56\" version=\"2026v1.0\">\n",
+    );
     xml.push_str("  <FilerHeader>\n");
-    xml.push_str(&format!("    <HoldingOrganizationID>{ORG_HOLDING_ID}</HoldingOrganizationID>\n"));
-    xml.push_str("    <LegalName>guadalupelopezjose96-org (Tech Arquitecture Pro-Elite)</LegalName>\n");
+    xml.push_str(&format!(
+        "    <HoldingOrganizationID>{ORG_HOLDING_ID}</HoldingOrganizationID>\n"
+    ));
+    xml.push_str(
+        "    <LegalName>guadalupelopezjose96-org (Tech Arquitecture Pro-Elite)</LegalName>\n",
+    );
     xml.push_str("    <StatutoryAct>Automated Asset Utilization and Fiscal Solvency Act of 2026 (IRC Chapter 56)</StatutoryAct>\n");
     xml.push_str("    <AuthorAttribution>Jose Emanuel Guadalupe Lopez (DMCA 17 U.S.C. 1202 - 0% Alteration)</AuthorAttribution>\n");
     xml.push_str(&format!("    <CompetitiveNeutralityRateBPS>{AAUFSA_TAX_RATE_NUMERATOR}</CompetitiveNeutralityRateBPS>\n"));
-    xml.push_str(&format!("    <SafeHarborMonths>{AAUFSA_SAFE_HARBOR_MONTHS}</SafeHarborMonths>\n"));
-    xml.push_str(&format!("    <ControlledGroupThresholdUSD>{}</ControlledGroupThresholdUSD>\n", format_usd(AAUFSA_SMALL_BUSINESS_THRESHOLD_MICROS)));
+    xml.push_str(&format!(
+        "    <SafeHarborMonths>{AAUFSA_SAFE_HARBOR_MONTHS}</SafeHarborMonths>\n"
+    ));
+    xml.push_str(&format!(
+        "    <ControlledGroupThresholdUSD>{}</ControlledGroupThresholdUSD>\n",
+        format_usd(AAUFSA_SMALL_BUSINESS_THRESHOLD_MICROS)
+    ));
     xml.push_str("  </FilerHeader>\n");
     xml.push_str("  <ControlledGroupSchedules>\n");
 
     for item in &schedules {
         xml.push_str(&format!("    <ScheduleLine id=\"{}\">\n", item.schedule_id));
-        xml.push_str(&format!("      <DomainName>{}</DomainName>\n", item.domain_name));
-        xml.push_str(&format!("      <TenantID>{}</TenantID>\n", item.domain.tenant_id()));
-        xml.push_str(&format!("      <StatutoryProvision>{}</StatutoryProvision>\n", item.statutory_section));
-        xml.push_str(&format!("      <GrossReceiptsUSD>{}</GrossReceiptsUSD>\n", format_usd(item.gross_receipts_micros)));
+        xml.push_str(&format!(
+            "      <DomainName>{}</DomainName>\n",
+            item.domain_name
+        ));
+        xml.push_str(&format!(
+            "      <TenantID>{}</TenantID>\n",
+            item.domain.tenant_id()
+        ));
+        xml.push_str(&format!(
+            "      <StatutoryProvision>{}</StatutoryProvision>\n",
+            item.statutory_section
+        ));
+        xml.push_str(&format!(
+            "      <GrossReceiptsUSD>{}</GrossReceiptsUSD>\n",
+            format_usd(item.gross_receipts_micros)
+        ));
 
         match evaluate_aaufsa_chapter56(item.context) {
             Ok(AaufsaTaxDetermination {
@@ -290,20 +319,32 @@ fn generate_irs_form8999_xml() -> String {
                 total_receipts = total_receipts.saturating_add(item.gross_receipts_micros);
                 total_tax = total_tax.saturating_add(total_chapter56_tax_micros);
                 total_oasi_75 = total_oasi_75.saturating_add(oasi_di_trust_fund_75_micros);
-                total_reskilling_25 = total_reskilling_25.saturating_add(workforce_reskilling_25_micros);
+                total_reskilling_25 =
+                    total_reskilling_25.saturating_add(workforce_reskilling_25_micros);
 
                 xml.push_str("      <FilingStatus>ACCEPTED_SERIALIZABLE</FilingStatus>\n");
                 xml.push_str(&format!("      <CloudSaasExemptSec5000Hd>{cloud_saas_exempt}</CloudSaasExemptSec5000Hd>\n"));
                 xml.push_str(&format!("      <SmallBusinessExemptSec5000Gb>{small_business_exempt}</SmallBusinessExemptSec5000Gb>\n"));
                 xml.push_str(&format!("      <SafeHarbor36mSec5000Ga>{safe_harbor_applied}</SafeHarbor36mSec5000Ga>\n"));
                 xml.push_str(&format!("      <ClawbackTriggeredSec5000Gc>{clawback_triggered}</ClawbackTriggeredSec5000Gc>\n"));
-                xml.push_str(&format!("      <Chapter56TaxLiabilityUSD>{}</Chapter56TaxLiabilityUSD>\n", format_usd(total_chapter56_tax_micros)));
-                xml.push_str(&format!("      <TrustFundOasiDi75PctUSD>{}</TrustFundOasiDi75PctUSD>\n", format_usd(oasi_di_trust_fund_75_micros)));
-                xml.push_str(&format!("      <TrustFundReskilling25PctUSD>{}</TrustFundReskilling25PctUSD>\n", format_usd(workforce_reskilling_25_micros)));
+                xml.push_str(&format!(
+                    "      <Chapter56TaxLiabilityUSD>{}</Chapter56TaxLiabilityUSD>\n",
+                    format_usd(total_chapter56_tax_micros)
+                ));
+                xml.push_str(&format!(
+                    "      <TrustFundOasiDi75PctUSD>{}</TrustFundOasiDi75PctUSD>\n",
+                    format_usd(oasi_di_trust_fund_75_micros)
+                ));
+                xml.push_str(&format!(
+                    "      <TrustFundReskilling25PctUSD>{}</TrustFundReskilling25PctUSD>\n",
+                    format_usd(workforce_reskilling_25_micros)
+                ));
             }
             Err(err) => {
                 xml.push_str("      <FilingStatus>REJECTED_FAIL_CLOSED</FilingStatus>\n");
-                xml.push_str(&format!("      <FailClosedReason>{err:?}</FailClosedReason>\n"));
+                xml.push_str(&format!(
+                    "      <FailClosedReason>{err:?}</FailClosedReason>\n"
+                ));
             }
         }
         xml.push_str("    </ScheduleLine>\n");
@@ -311,14 +352,25 @@ fn generate_irs_form8999_xml() -> String {
 
     xml.push_str("  </ControlledGroupSchedules>\n");
     xml.push_str("  <PartIIITrustFundSettlementSummary>\n");
-    xml.push_str(&format!("    <TotalAcceptedGrossReceiptsUSD>{}</TotalAcceptedGrossReceiptsUSD>\n", format_usd(total_receipts)));
-    xml.push_str(&format!("    <TotalChapter56TaxDueUSD>{}</TotalChapter56TaxDueUSD>\n", format_usd(total_tax)));
-    xml.push_str(&format!("    <AllocationOasiAndDiTrustFund75PctUSD>{}</AllocationOasiAndDiTrustFund75PctUSD>\n", format_usd(total_oasi_75)));
+    xml.push_str(&format!(
+        "    <TotalAcceptedGrossReceiptsUSD>{}</TotalAcceptedGrossReceiptsUSD>\n",
+        format_usd(total_receipts)
+    ));
+    xml.push_str(&format!(
+        "    <TotalChapter56TaxDueUSD>{}</TotalChapter56TaxDueUSD>\n",
+        format_usd(total_tax)
+    ));
+    xml.push_str(&format!(
+        "    <AllocationOasiAndDiTrustFund75PctUSD>{}</AllocationOasiAndDiTrustFund75PctUSD>\n",
+        format_usd(total_oasi_75)
+    ));
     xml.push_str(&format!("    <AllocationWorkforceReskillingTrustFund25PctUSD>{}</AllocationWorkforceReskillingTrustFund25PctUSD>\n", format_usd(total_reskilling_25)));
     xml.push_str("  </PartIIITrustFundSettlementSummary>\n");
 
     let digest = to_hex(&sha256_digest(xml.as_bytes()));
-    xml.push_str(&format!("  <CryptographicSealFIPS180_4>{digest}</CryptographicSealFIPS180_4>\n"));
+    xml.push_str(&format!(
+        "  <CryptographicSealFIPS180_4>{digest}</CryptographicSealFIPS180_4>\n"
+    ));
     xml.push_str("</IRSForm8999Return>\n");
     xml
 }
@@ -343,7 +395,9 @@ mod form8999_tests {
     #[test]
     fn test_irs_form8999_exact_totals_and_blocking() {
         let xml = generate_irs_form8999_xml();
-        assert!(xml.contains("<TotalAcceptedGrossReceiptsUSD>4036500.000000</TotalAcceptedGrossReceiptsUSD>"));
+        assert!(xml.contains(
+            "<TotalAcceptedGrossReceiptsUSD>4036500.000000</TotalAcceptedGrossReceiptsUSD>"
+        ));
         assert!(xml.contains("<TotalChapter56TaxDueUSD>76500.000000</TotalChapter56TaxDueUSD>"));
         assert!(xml.contains("<AllocationOasiAndDiTrustFund75PctUSD>57375.000000</AllocationOasiAndDiTrustFund75PctUSD>"));
         assert!(xml.contains("<AllocationWorkforceReskillingTrustFund25PctUSD>19125.000000</AllocationWorkforceReskillingTrustFund25PctUSD>"));

@@ -54,7 +54,8 @@ pub fn verify_spatial_scene(scene: &SpatialDigitalTwinScene) -> Result<i128, Stu
     if !scene.c2pa_worm_verified {
         return Err(Studios3dError::UntrustedAssetSignature);
     }
-    if scene.frame_time_micro_ms <= 0 || scene.frame_time_micro_ms > STUDIOS3D_FRAME_BUDGET_MICRO_MS {
+    if scene.frame_time_micro_ms <= 0 || scene.frame_time_micro_ms > STUDIOS3D_FRAME_BUDGET_MICRO_MS
+    {
         return Err(Studios3dError::FrameBudgetExceeded);
     }
     if scene.bounding_box_micrometers <= 0
@@ -115,9 +116,15 @@ fn main() -> ExitCode {
     out.push_str("  \"parent_division\": \"DIV-01-AURAINTELCORE (auraintelcore.com)\",\n");
     out.push_str(&format!("  \"holding_org_id\": \"{ORG_HOLDING_ID}\",\n"));
     out.push_str(&format!("  \"tenant_id\": \"{tenant_id}\",\n"));
-    out.push_str(&format!("  \"lifecycle_folder\": \"02-Production ({prod_folder})\",\n"));
-    out.push_str("  \"engine_state\": \"AURAINTEL_STUDIOS3D_DETERMINISTIC_SPATIAL_ACTIVE_100PCT\",\n");
-    out.push_str(&format!("  \"target_framerate_fps\": {STUDIOS3D_TARGET_FPS},\n"));
+    out.push_str(&format!(
+        "  \"lifecycle_folder\": \"02-Production ({prod_folder})\",\n"
+    ));
+    out.push_str(
+        "  \"engine_state\": \"AURAINTEL_STUDIOS3D_DETERMINISTIC_SPATIAL_ACTIVE_100PCT\",\n",
+    );
+    out.push_str(&format!(
+        "  \"target_framerate_fps\": {STUDIOS3D_TARGET_FPS},\n"
+    ));
     out.push_str("  \"spatial_arithmetic\": \"FIXED_POINT_I128_MICROMETERS_ZERO_FLOAT\",\n");
     out.push_str("  \"sec_5000h_d_cloud_saas_exempt\": true,\n");
     out.push_str("  \"digital_twin_scenes\": [\n");
@@ -125,13 +132,22 @@ fn main() -> ExitCode {
     for (idx, sc) in scenes.iter().enumerate() {
         out.push_str("    {\n");
         out.push_str(&format!("      \"scene_id\": \"{}\",\n", sc.scene_id));
-        out.push_str(&format!("      \"linked_vpp_asset\": \"{}\",\n", sc.linked_vpp_asset));
-        out.push_str(&format!("      \"frame_time_ms\": \"{}\",\n", format_micros(sc.frame_time_micro_ms * 1_000)));
+        out.push_str(&format!(
+            "      \"linked_vpp_asset\": \"{}\",\n",
+            sc.linked_vpp_asset
+        ));
+        out.push_str(&format!(
+            "      \"frame_time_ms\": \"{}\",\n",
+            format_micros(sc.frame_time_micro_ms * 1_000)
+        ));
         match verify_spatial_scene(sc) {
             Ok(val) => {
                 total_settled = total_settled.saturating_add(val);
                 out.push_str("      \"status\": \"C2PA_WORM_VERIFIED_AND_SETTLED\",\n");
-                out.push_str(&format!("      \"settled_usd\": \"{}\"\n", format_micros(val)));
+                out.push_str(&format!(
+                    "      \"settled_usd\": \"{}\"\n",
+                    format_micros(val)
+                ));
             }
             Err(err) => {
                 out.push_str("      \"status\": \"BLOCKED_FAIL_CLOSED\",\n");
@@ -146,7 +162,10 @@ fn main() -> ExitCode {
     }
 
     out.push_str("  ],\n");
-    out.push_str(&format!("  \"total_studios3d_settled_usd\": \"{}\"\n}}\n", format_micros(total_settled)));
+    out.push_str(&format!(
+        "  \"total_studios3d_settled_usd\": \"{}\"\n}}\n",
+        format_micros(total_settled)
+    ));
 
     if let Ok(mut f) = File::create("auraintel_studios3d_production_state.json") {
         let _ = f.write_all(out.as_bytes());
