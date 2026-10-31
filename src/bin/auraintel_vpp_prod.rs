@@ -15,8 +15,8 @@ use std::io::Write;
 use std::process::ExitCode;
 
 use sovereign_multi_entity_governor::{
-    CorporateDomain, LifecycleFolder, SovereignError, MICRO_SCALE, ORG_HOLDING_ID,
-    VPP_MAX_SAFE_FREQ_MICRO_HZ, VPP_MIN_SAFE_FREQ_MICRO_HZ,
+    CorporateDomain, LifecycleFolder, MICRO_SCALE, ORG_HOLDING_ID, VPP_MAX_FREQ_MICRO_HZ,
+    VPP_MIN_FREQ_MICRO_HZ,
 };
 
 // Telemetría Bus #1 y Suite Prometheus (:8000) / IEC 61850 (:10102) en micro-unidades exactas
@@ -48,6 +48,12 @@ pub const BINARY_SHA256_ATTESTATION: &str =
 pub const SLSA_V1_PROVENANCE_DIGEST: &str =
     "c9cfb1f7a2bc347069cb46fde9adaba9083e175c96cb7d80c7b998c1e600a1f1";
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum VppEnvelopeError {
+    FrequencyOutOfEnvelope,
+    AntiIslandingDisabled,
+}
+
 #[must_use]
 pub fn format_micros(micros: i128) -> String {
     let abs_val = micros.unsigned_abs();
@@ -61,12 +67,12 @@ pub fn verify_vpp_grid_envelope(
     freq_micro_hz: i128,
     anti_islanding_active: bool,
     gross_micros: i128,
-) -> Result<i128, SovereignError> {
+) -> Result<i128, VppEnvelopeError> {
     if !anti_islanding_active {
-        return Err(SovereignError::AntiIslandingProtectionDisabled);
+        return Err(VppEnvelopeError::AntiIslandingDisabled);
     }
-    if !(VPP_MIN_SAFE_FREQ_MICRO_HZ..=VPP_MAX_SAFE_FREQ_MICRO_HZ).contains(&freq_micro_hz) {
-        return Err(SovereignError::VppFrequencyOutOfEnvelope);
+    if !(VPP_MIN_FREQ_MICRO_HZ..=VPP_MAX_FREQ_MICRO_HZ).contains(&freq_micro_hz) {
+        return Err(VppEnvelopeError::FrequencyOutOfEnvelope);
     }
     Ok(gross_micros)
 }
@@ -141,7 +147,7 @@ mod vpp_tests {
         assert!(verify_vpp_grid_envelope(VPP_BUS1_FREQ_MICRO_HZ, true, 100_000_000).is_ok());
         assert_eq!(
             verify_vpp_grid_envelope(61_500_000, true, 100_000_000),
-            Err(SovereignError::VppFrequencyOutOfEnvelope)
+            Err(VppEnvelopeError::FrequencyOutOfEnvelope)
         );
         assert_eq!(
             VPP_SAAS_CLIENT_SAVINGS_MICROS_H.saturating_add(VPP_WHOLESALE_REVENUE_MICROS_H),
