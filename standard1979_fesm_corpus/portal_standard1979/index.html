@@ -469,6 +469,43 @@ btn.addEventListener("click", function() {
       </a>
     </div>
   </details>
+  <!-- PLANETARY READ-ONLY INVOICE AUTO-SETTLEMENT ENGINE (100% GLOBAL INVOICES) -->
+  <div id="planetary-readonly-invoice-auditor" style="margin-top:16px;background:linear-gradient(180deg,#06131f 0%,#090d16 100%);border:1px solid #0d9488;border-radius:8px;padding:16px;">
+    <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px;">
+      <div>
+        <span style="background:#0f766e;color:#5eead4;font-size:0.7rem;font-weight:700;padding:3px 8px;border-radius:4px;">MODO 100% READ-ONLY GLOBAL — AUTO-DEDUCCIÓN 21%</span>
+        <h4 style="margin:6px 0 2px 0;color:#f8fafc;font-size:0.98rem;">Oráculo Automático Read-Only para el 100% de las Facturas del Planeta (PEPPOL UBL 3.0 / EDI 810 / CFDI XML / UtilityAPI)</h4>
+        <p style="margin:0;color:#94a3b8;font-size:0.78rem;">Conecta cualquier factura eléctrica del mundo en modo Solo Lectura (sin alterar el origen), verifica el ahorro VPP y debita automáticamente el 21% en Stripe Live.</p>
+      </div>
+      <span style="font-family:monospace;font-size:0.75rem;color:#2dd4bf;background:#042f2e;padding:6px 10px;border-radius:6px;border:1px solid #14b8a6;">
+        INMUTABILIDAD: Object.freeze(2100/7900 bps) | WORM 0400
+      </span>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;align-items:end;background:#0f172a;padding:12px;border-radius:6px;border:1px solid #1e293b;">
+      <div>
+        <label style="display:block;font-size:0.73rem;color:#94a3b8;margin-bottom:4px;">ESTÁNDAR FACTURA GLOBAL (READ-ONLY):</label>
+        <select id="ro-inv-standard" onchange="window.calcReadOnlyGlobalInvoice()" style="width:100%;padding:8px;background:#1e293b;color:#f8fafc;border:1px solid #334155;border-radius:5px;font-size:0.8rem;">
+          <option value="PEPPOL UBL 3.0 (UE / Global)">PEPPOL UBL 3.0 (Global / UE / APAC)</option>
+          <option value="ANSI X12 EDI 810 / GreenButton (US/CA)">ANSI X12 EDI 810 / GreenButton (EE. UU. / Canadá)</option>
+          <option value="CFDI 4.0 XML / Factura Electrónica (LATAM)">CFDI 4.0 XML / Factura Electrónica (LATAM)</option>
+          <option value="OpenADR 2.0b / UtilityAPI Telemetry">OpenADR 2.0b / UtilityAPI (Smart Grid Global)</option>
+        </select>
+      </div>
+      <div>
+        <label style="display:block;font-size:0.73rem;color:#94a3b8;margin-bottom:4px;">FACTURA BASE SIN VPP (USD):</label>
+        <input id="ro-inv-base" type="number" value="45000" min="100" step="100" oninput="window.calcReadOnlyGlobalInvoice()" style="width:100%;padding:8px;background:#1e293b;color:#f8fafc;border:1px solid #334155;border-radius:5px;font-size:0.85rem;font-family:monospace;">
+      </div>
+      <div>
+        <label style="display:block;font-size:0.73rem;color:#94a3b8;margin-bottom:4px;">FACTURA REAL CON VPP (USD):</label>
+        <input id="ro-inv-actual" type="number" value="32500" min="0" step="100" oninput="window.calcReadOnlyGlobalInvoice()" style="width:100%;padding:8px;background:#1e293b;color:#f8fafc;border:1px solid #334155;border-radius:5px;font-size:0.85rem;font-family:monospace;">
+      </div>
+      <div style="background:#042f2e;padding:8px 12px;border-radius:6px;border:1px solid #0d9488;">
+        <div style="font-size:0.68rem;color:#99f6e4;">AUTO-COBRO STRIPE 21% (READ-ONLY):</div>
+        <div id="ro-inv-21-out" style="font-size:1.05rem;font-weight:800;color:#2dd4bf;font-family:monospace;">USD 2,625.00</div>
+        <div id="ro-inv-79-out" style="font-size:0.68rem;color:#ccfbf1;">79% Cliente: USD 9,875.00</div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script>
